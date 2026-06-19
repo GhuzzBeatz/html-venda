@@ -599,18 +599,36 @@ async function fetchItemDetails(ids) {
 async function fetchVisits(ids) {
   if (!ids.length) return {};
   const visits = {};
-  // ML API accepts up to 50 ids comma-separated
+  const now = new Date();
+  const from = new Date(now - getCurrentDays() * 86400000);
+  const dateFrom = from.toISOString().split('T')[0];
+  const dateTo = now.toISOString().split('T')[0];
   for (let i = 0; i < ids.length; i += 50) {
     const chunk = ids.slice(i, i + 50).join(',');
     try {
-      const data = await mlApi('/visits/items?ids=' + chunk);
-      if (Array.isArray(data)) {
-        data.forEach(v => { if (v.id) visits[v.id] = v.total_visits || 0; });
+      const data = await mlApi(`/items/visits?ids=${chunk}&date_from=${dateFrom}&date_to=${dateTo}`);
+      if (data && typeof data === 'object' && !data.error) {
+        for (const [id, count] of Object.entries(data)) {
+          visits[id] = (typeof count === 'number') ? count : 0;
+        }
       }
     } catch {}
-    if (i + 50 < ids.length) await new Promise(r => setTimeout(r, 200));
+    try {
+      for (const id of ids.slice(i, i + 50)) {
+        if (visits[id] !== undefined) continue;
+        const data = await mlApi(`/items/${id}/visits/time_window?last=${getCurrentDays()}&unit=day`);
+        if (data && data.total_visits != null) visits[id] = data.total_visits;
+        else if (Array.isArray(data)) visits[id] = data.reduce((s, d) => s + (d.total || 0), 0);
+      }
+    } catch {}
+    if (i + 50 < ids.length) await new Promise(r => setTimeout(r, 300));
   }
   return visits;
+}
+
+function getCurrentDays() {
+  const active = document.querySelector('.period-btn.active');
+  return active ? parseInt(active.dataset.days) || 30 : 30;
 }
 
 /* ── Main Load ── */
