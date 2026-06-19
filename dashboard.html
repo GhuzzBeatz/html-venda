@@ -2,184 +2,319 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GHZ Plugin - Dashboard de Licenças</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>GHZ Plugin — Dashboard</title>
 <style>
-  :root {
-    --bg: #0f1117; --bg2: #161b27; --card: #1c2233; --card2: #222840;
-    --border: #2a3350; --border2: #3a4570;
-    --primary: #4f8ef7; --primary2: #3a7af0;
-    --primary-bg: rgba(79,142,247,.12); --primary-bdr: rgba(79,142,247,.3);
-    --green: #22d3a0; --green-bg: rgba(34,211,160,.1);
-    --red: #f05252; --red-bg: rgba(240,82,82,.1);
-    --yellow: #f0c752; --yellow-bg: rgba(240,199,82,.1);
-    --gray: #5a6480;
-    --fg: #e8eaf0; --fg2: #a0a8c0; --muted: #5a6480;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0 }
-  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; padding: 24px }
-  a { color: var(--primary); text-decoration: none }
-  a:hover { text-decoration: underline }
+:root {
+  --bg: #0f1117; --bg2: #161b27; --card: #1c2233; --card2: #222840;
+  --border: #2a3350; --border2: #3a4570;
+  --primary: #4f8ef7; --primary2: #3a7af0;
+  --primary-bg: rgba(79,142,247,.12); --primary-bdr: rgba(79,142,247,.3);
+  --green: #22d3a0; --green-bg: rgba(34,211,160,.12);
+  --red: #f05252; --red-bg: rgba(240,82,82,.12);
+  --orange: #f0a052; --orange-bg: rgba(240,160,82,.12);
+  --purple: #a06ef7; --purple-bg: rgba(160,110,247,.12);
+  --yellow: #f0c752; --yellow-bg: rgba(240,199,82,.12);
+  --muted: #5a6480; --fg: #e8eaf0; --fg2: #a0a8c0;
+  --radius: 14px; --radius-sm: 9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);min-height:100dvh;padding:12px;padding-bottom:40px;overflow-x:hidden}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1200px;margin:0 auto}
 
-  .header { text-align: center; margin-bottom: 24px; position: relative }
-  .header h1 { font-size: 24px; font-weight: 900 }
-  .header h1 span { color: var(--primary) }
-  .header p { font-size: 13px; color: var(--muted); margin-top: 6px }
-  .header-link { position: absolute; right: 0; top: 6px; font-size: 13px; color: var(--primary); font-weight: 600 }
+/* ── Header ── */
+.header{text-align:center;padding:8px 0 16px;position:relative}
+.header h1{font-size:20px;font-weight:900;letter-spacing:-.02em}
+.header h1 span{color:var(--primary)}
+.header-links{display:flex;gap:16px;justify-content:center;margin-top:6px}
+.header-links a{font-size:12px;font-weight:700;color:var(--primary)}
+.last-refresh{font-size:11px;color:var(--muted);margin-top:4px}
 
-  .container { max-width: 1400px; margin: 0 auto }
+/* ── Auth ── */
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px}
+.auth-row{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.auth-row .field{flex:1;min-width:0}
+.auth-row input[type="password"]{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:11px 12px;color:var(--fg);font-size:14px;outline:none;font-family:inherit}
+.auth-row input:focus{border-color:var(--primary)}
+.auth-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:8px;flex-wrap:wrap;gap:6px}
+.checkbox-row{display:flex;align-items:center;gap:6px}
+.checkbox-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer}
+.checkbox-row label{font-size:12px;color:var(--fg2);cursor:pointer}
 
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 20px }
-  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 10px }
-  .card-body { padding: 18px }
+/* ── Buttons ── */
+.btn{min-height:44px;padding:11px 20px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary2)}
+.btn-sm{min-height:36px;padding:8px 14px;font-size:12px;border-radius:7px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg2)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
-  label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 5px }
-  input, select { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; color: var(--fg); font-size: 13px; outline: none; font-family: inherit }
-  input:focus, select:focus { border-color: var(--primary) }
-  select { cursor: pointer }
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;animation:fadeUp .35s ease both}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg2);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-body{padding:14px 16px}
 
-  .auth-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 14px }
-  .auth-row .field { flex: 1; min-width: 220px }
-  .auth-row input { width: 100%; margin-bottom: 0 }
-  .checkbox-row { display: flex; align-items: center; gap: 6px; margin-top: 6px }
-  .checkbox-row input[type="checkbox"] { width: auto; margin: 0 }
-  .checkbox-row label { margin: 0; font-size: 11px; text-transform: none; letter-spacing: 0; color: var(--fg2); cursor: pointer }
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-  .btn { padding: 10px 20px; border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 800; font-family: inherit; transition: all .15s }
-  .btn-primary { background: var(--primary); color: #fff }
-  .btn-primary:hover { background: var(--primary2) }
-  .btn-primary:disabled { background: var(--border2); cursor: wait }
+/* ── KPI Row ── */
+.kpi-scroll{display:flex;gap:10px;overflow-x:auto;padding:2px 0 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.kpi-scroll::-webkit-scrollbar{display:none}
+.kpi-card{flex:0 0 auto;min-width:140px;width:140px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;scroll-snap-align:start;text-align:center}
+.kpi-card .kpi-value{font-size:28px;font-weight:900;line-height:1.1;color:var(--fg)}
+.kpi-card .kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+.kpi-card .kpi-sub{font-size:11px;color:var(--fg2);margin-top:2px}
+.kpi-card.accent-green .kpi-value{color:var(--green)}
+.kpi-card.accent-primary .kpi-value{color:var(--primary)}
 
-  .filters-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 18px }
-  .filters-row .field { min-width: 180px }
-  .filters-row select, .filters-row input { width: 100% }
+/* ── Bar charts (CSS only) ── */
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;flex-direction:column;gap:3px}
+.bar-label{font-size:12px;font-weight:700;color:var(--fg2);display:flex;justify-content:space-between}
+.bar-track{height:22px;background:var(--bg2);border-radius:6px;overflow:hidden;display:flex}
+.bar-seg{height:100%;transition:width .5s ease}
+.bar-seg.activated{background:var(--green)}
+.bar-seg.pending{background:var(--yellow)}
+.bar-seg.blocked{background:var(--red)}
+.bar-legend{display:flex;gap:14px;margin-bottom:8px;flex-wrap:wrap}
+.bar-legend span{font-size:11px;color:var(--fg2);display:flex;align-items:center;gap:4px}
+.bar-legend span::before{content:'';width:10px;height:10px;border-radius:3px;display:inline-block}
+.bar-legend .l-activated::before{background:var(--green)}
+.bar-legend .l-pending::before{background:var(--yellow)}
+.bar-legend .l-blocked::before{background:var(--red)}
 
-  /* Stats */
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px }
-  .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center }
-  .stat-value { font-size: 28px; font-weight: 900 }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px }
-  .stat-total .stat-value { color: var(--primary) }
-  .stat-active .stat-value { color: var(--green) }
-  .stat-activated .stat-value { color: var(--yellow) }
-  .stat-pending .stat-value { color: var(--fg2) }
+/* ── Daily activity chart ── */
+.daily-chart{display:flex;align-items:flex-end;gap:2px;height:120px;padding-top:8px;overflow-x:auto;scrollbar-width:none}
+.daily-chart::-webkit-scrollbar{display:none}
+.daily-col{flex:1;min-width:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}
+.daily-bar{width:100%;min-width:6px;max-width:18px;background:var(--primary);border-radius:3px 3px 0 0;transition:height .4s ease;cursor:pointer;position:relative}
+.daily-bar:hover{background:var(--primary2)}
+.daily-bar .tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:10px;white-space:nowrap;color:var(--fg);z-index:10;pointer-events:none}
+.daily-bar:hover .tooltip{display:block}
+.daily-date{font-size:8px;color:var(--muted);margin-top:4px;writing-mode:vertical-rl;text-orientation:mixed;height:30px;overflow:hidden}
 
-  /* Table */
-  .table-wrap { overflow-x: auto }
-  table { width: 100%; border-collapse: collapse; font-size: 13px }
-  thead th { text-align: left; padding: 10px 12px; font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid var(--border); white-space: nowrap }
-  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s }
-  tbody tr:hover { background: var(--primary-bg) }
-  tbody td { padding: 10px 12px; vertical-align: middle; white-space: nowrap }
+/* ── Event tabs ── */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:12px}
+.tab-btn{flex:1;padding:10px 8px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;min-height:44px;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--primary)}
+.tab-content{display:none}.tab-content.active{display:block}
 
-  .badge-app { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 700; background: var(--primary-bg); color: var(--primary) }
-  .key-mono { font-family: monospace; font-size: 12px; color: var(--primary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle }
+/* ── Event table ── */
+.event-table{width:100%;border-collapse:collapse;font-size:12px}
+.event-table th{text-align:left;padding:8px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.event-table td{padding:8px;border-bottom:1px solid var(--border);color:var(--fg2)}
 
-  .status-badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 700 }
-  .status-active { background: var(--green-bg); color: var(--green) }
-  .status-blocked { background: var(--red-bg); color: var(--red) }
-  .status-cancelled { background: rgba(90,100,128,.2); color: var(--gray) }
+/* ── Badges ── */
+.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-orange{background:var(--orange-bg);color:var(--orange)}
+.badge-blue{background:var(--primary-bg);color:var(--primary)}
+.badge-purple{background:var(--purple-bg);color:var(--purple)}
+.badge-gray{background:rgba(90,100,128,.15);color:var(--muted)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
 
-  .bool-yes { color: var(--green); font-weight: 700 }
-  .bool-no { color: var(--muted) }
+/* ── Collapsible ── */
+.collapsible-header{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:8px}
+.collapsible-header::after{content:'';border:5px solid transparent;border-top:6px solid var(--muted);transition:transform .2s;margin-left:auto}
+.collapsible-header.open::after{transform:rotate(180deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.collapsible-body.open{max-height:4000px}
 
-  .expand-row td { padding: 0 !important; border: none }
-  .expand-content { padding: 16px 24px; background: var(--bg2); border-bottom: 2px solid var(--border) }
-  .detail-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px }
-  .detail-item { font-size: 12px }
-  .detail-label { color: var(--muted); font-size: 10px; text-transform: uppercase; font-weight: 700; letter-spacing: .05em }
-  .detail-value { color: var(--fg); margin-top: 2px; word-break: break-all }
+/* ── GitHub grid ── */
+.gh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.gh-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.gh-card .gh-name{font-size:12px;font-weight:800;color:var(--primary);word-break:break-all}
+.gh-card .gh-meta{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.5}
+.gh-card .gh-dl{font-size:16px;font-weight:900;color:var(--green);margin-top:2px}
 
-  .empty { text-align: center; color: var(--muted); padding: 40px; font-size: 13px }
+/* ── Recent events feed ── */
+.feed{max-height:400px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.feed-item{display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start;font-size:12px}
+.feed-item:last-child{border-bottom:none}
+.feed-time{font-size:10px;color:var(--muted);white-space:nowrap;min-width:70px;padding-top:2px}
+.feed-body{flex:1;min-width:0}
+.feed-body .feed-meta{color:var(--muted);font-size:10px;margin-top:2px;word-break:break-all}
 
-  @media (max-width: 768px) {
-    .auth-row, .filters-row { flex-direction: column }
-    .auth-row .field, .filters-row .field { min-width: unset; width: 100% }
-    .stats-row { grid-template-columns: 1fr 1fr }
-  }
+/* ── License table ── */
+.search-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-bar input{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;color:var(--fg);font-size:13px;outline:none;font-family:inherit}
+.search-bar input:focus{border-color:var(--primary)}
+.search-bar select{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px;color:var(--fg);font-size:12px;outline:none;font-family:inherit;cursor:pointer;min-height:44px}
+
+.lic-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lic-table{width:100%;border-collapse:collapse;font-size:11px;min-width:700px}
+.lic-table th{text-align:left;padding:8px 6px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--card);z-index:2}
+.lic-table td{padding:7px 6px;border-bottom:1px solid var(--border);color:var(--fg2);vertical-align:top}
+.lic-table tr{cursor:pointer;transition:background .1s}
+.lic-table tr:hover{background:var(--bg2)}
+.lic-expanded{background:var(--bg2);border-bottom:1px solid var(--border)}
+.lic-expanded td{padding:10px 12px;font-size:11px;line-height:1.7}
+.lic-expanded .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+.lic-expanded .detail-label{color:var(--muted);font-weight:700}
+
+.trunc{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}
+
+/* ── Spinner ── */
+.spinner-overlay{position:fixed;inset:0;background:rgba(15,17,23,.85);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px)}
+.spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+
+/* ── Error ── */
+.error-msg{background:var(--red-bg);border:1px solid var(--red);color:var(--red);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+.error-msg.show{display:block}
+
+/* ── Responsive ── */
+@media(min-width:640px){
+  body{padding:20px 24px}
+  .kpi-card{min-width:150px;width:auto;flex:1}
+  .daily-date{font-size:9px}
+}
+@media(min-width:900px){
+  body{padding:24px 32px}
+  .header h1{font-size:24px}
+  .kpi-card{min-width:130px}
+}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <a href="index.html" class="header-link">&#128196; Gerar Chaves</a>
-  <h1><span>GHZ</span> Plugin - Dashboard</h1>
-  <p>Painel administrativo de licencas</p>
-</div>
-
 <div class="container">
-  <!-- Auth Card -->
-  <div class="card">
-    <div class="card-header">Autenticacao</div>
-    <div class="card-body">
-      <div class="auth-row">
-        <div class="field">
-          <label>Senha Administrativa</label>
-          <input type="password" id="adminPassword" placeholder="Digite a senha admin">
-        </div>
-        <button class="btn btn-primary" id="btnCarregar" onclick="carregarLicencas()">Carregar Licencas</button>
+  <!-- Spinner -->
+  <div class="spinner-overlay hidden" id="spinner"><div class="spinner"></div></div>
+
+  <!-- Error -->
+  <div class="error-msg" id="error"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>GHZ Plugin <span>Dashboard</span></h1>
+    <div class="header-links">
+      <a href="index.html">Gerador</a>
+      <a href="#" onclick="loadData();return false">Atualizar</a>
+    </div>
+    <div class="last-refresh" id="lastRefresh"></div>
+  </div>
+
+  <!-- Auth -->
+  <div class="auth-card">
+    <div class="auth-row">
+      <div class="field">
+        <input type="password" id="adminPass" placeholder="Senha de admin" autocomplete="current-password">
       </div>
+      <button class="btn btn-primary" onclick="loadData()" id="btnLoad">Carregar</button>
+    </div>
+    <div class="auth-bottom">
       <div class="checkbox-row">
-        <input type="checkbox" id="salvarSenha" onchange="toggleSalvarSenha()">
-        <label for="salvarSenha">Salvar senha neste navegador</label>
+        <input type="checkbox" id="savePass">
+        <label for="savePass">Salvar senha</label>
       </div>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row" id="statsRow" style="display:none">
-    <div class="stat-card stat-total"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total</div></div>
-    <div class="stat-card stat-active"><div class="stat-value" id="statActive">0</div><div class="stat-label">Ativas</div></div>
-    <div class="stat-card stat-activated"><div class="stat-value" id="statActivated">0</div><div class="stat-label">Ativadas</div></div>
-    <div class="stat-card stat-pending"><div class="stat-value" id="statPending">0</div><div class="stat-label">Pendentes</div></div>
-  </div>
+  <!-- Dashboard content (hidden until loaded) -->
+  <div id="dashContent" class="hidden">
 
-  <!-- Filters -->
-  <div class="card" id="filtersCard" style="display:none">
-    <div class="card-body" style="padding:14px 18px">
-      <div class="filters-row">
-        <div class="field">
-          <label>Filtrar por App</label>
-          <select id="filterApp" onchange="aplicarFiltros()">
-            <option value="">Todos os Apps</option>
+    <!-- KPI Cards -->
+    <div class="kpi-scroll" id="kpiRow"></div>
+
+    <!-- Licencas por App -->
+    <div class="card" style="animation-delay:.05s">
+      <div class="card-header">Licencas por App</div>
+      <div class="card-body">
+        <div class="bar-legend">
+          <span class="l-activated">Ativadas</span>
+          <span class="l-pending">Pendentes</span>
+          <span class="l-blocked">Bloqueadas</span>
+        </div>
+        <div class="bar-chart" id="appBars"></div>
+      </div>
+    </div>
+
+    <!-- Atividade Diaria -->
+    <div class="card" style="animation-delay:.1s">
+      <div class="card-header">Atividade Diaria (30 dias)</div>
+      <div class="card-body">
+        <div class="daily-chart" id="dailyChart"></div>
+      </div>
+    </div>
+
+    <!-- Eventos -->
+    <div class="card" style="animation-delay:.15s">
+      <div class="card-header">Eventos</div>
+      <div class="card-body">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab(this,'evtToday')">Hoje</button>
+          <button class="tab-btn" onclick="switchTab(this,'evtWeek')">Semana</button>
+          <button class="tab-btn" onclick="switchTab(this,'evtMonth')">Mes</button>
+        </div>
+        <div class="tab-content active" id="evtToday"></div>
+        <div class="tab-content" id="evtWeek"></div>
+        <div class="tab-content" id="evtMonth"></div>
+      </div>
+    </div>
+
+    <!-- GitHub Repos -->
+    <div class="card" style="animation-delay:.2s">
+      <div class="card-body" style="padding:0">
+        <div class="collapsible-header" id="ghHeader" onclick="toggleCollapse('ghBody','ghHeader')" style="padding:12px 16px">
+          <span style="font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg2)">GitHub Repos</span>
+          <span class="badge badge-blue" id="ghCount">...</span>
+        </div>
+        <div class="collapsible-body" id="ghBody">
+          <div style="padding:4px 16px 16px">
+            <div class="gh-grid" id="ghGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ultimos Eventos -->
+    <div class="card" style="animation-delay:.25s">
+      <div class="card-header">Ultimos Eventos</div>
+      <div class="card-body">
+        <div class="feed" id="recentFeed"></div>
+      </div>
+    </div>
+
+    <!-- Todas as Licencas -->
+    <div class="card" style="animation-delay:.3s">
+      <div class="card-header">
+        Todas as Licencas
+        <span class="badge badge-blue" id="licCount">0</span>
+      </div>
+      <div class="card-body">
+        <div class="search-bar">
+          <input type="text" id="licSearch" placeholder="Buscar nome, chave, WhatsApp, app..." oninput="filterLicenses()">
+          <select id="licAppFilter" onchange="filterLicenses()">
+            <option value="">Todos os apps</option>
           </select>
         </div>
-        <div class="field" style="flex:1">
-          <label>Buscar por nome ou chave</label>
-          <input type="text" id="filterSearch" placeholder="Digite para buscar..." oninput="aplicarFiltros()">
+        <div class="lic-table-wrap" style="max-height:500px;overflow-y:auto">
+          <table class="lic-table">
+            <thead>
+              <tr>
+                <th>App</th>
+                <th>Chave</th>
+                <th>Cliente</th>
+                <th>WhatsApp</th>
+                <th>Pedido ML</th>
+                <th>Status</th>
+                <th>Ativado</th>
+                <th>Computador</th>
+                <th>Ultimo acesso</th>
+                <th>Criado</th>
+              </tr>
+            </thead>
+            <tbody id="licBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Table -->
-  <div class="card" id="tableCard" style="display:none">
-    <div class="card-header">
-      <span>Licencas <span id="countLabel"></span></span>
-    </div>
-    <div class="card-body" style="padding:0">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>App</th>
-              <th>Chave</th>
-              <th>Cliente</th>
-              <th>WhatsApp</th>
-              <th>Pedido ML</th>
-              <th>Status</th>
-              <th>Ativado?</th>
-              <th>Computador</th>
-              <th>Ultimo acesso</th>
-              <th>Criado em</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-      <div class="empty" id="emptyMsg" style="display:none">Nenhuma licenca encontrada</div>
-    </div>
-  </div>
+  </div><!-- /dashContent -->
 </div>
 
 <script>
@@ -187,213 +322,342 @@ const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
 const LS_KEY = '@GHZ:admin_token';
 
-let allLicenses = [];
-let expandedId = null;
+const GITHUB_REPOS = ['mesaup','NexHotel','petflow','studioflow','ImobCore','MEDCORE','GhuzzBeatz-FOLHAPRO','ZAPBOT','ZAPDISPARO','cleanboost','pontopro','irpro','recoverx','CPFCheck','STOQUE-STORE','ASOFACIL','CLINICA_Maziero','mailpro','site-ghz','html-venda'];
+const GH_CACHE_KEY = '@GHZ:gh_cache';
+const GH_CACHE_TTL = 5 * 60 * 1000;
 
-// Init
+let allLicenses = [];
+
+// ── Helpers ──
+function fmt(n) { return (n || 0).toLocaleString('pt-BR'); }
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  if (isNaN(dt)) return '—';
+  return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function fmtShort(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+function truncKey(k) {
+  if (!k) return '—';
+  if (k.length <= 12) return k;
+  return k.substring(0, 4) + '...' + k.substring(k.length - 4);
+}
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 8000);
+}
+function showSpinner(v) { document.getElementById('spinner').classList.toggle('hidden', !v); }
+
+// ── Init ──
 (function init() {
   const saved = localStorage.getItem(LS_KEY);
   if (saved) {
-    document.getElementById('adminPassword').value = saved;
-    document.getElementById('salvarSenha').checked = true;
+    document.getElementById('adminPass').value = saved;
+    document.getElementById('savePass').checked = true;
   }
 })();
 
-function toggleSalvarSenha() {
-  const cb = document.getElementById('salvarSenha');
-  if (cb.checked) {
-    const pw = document.getElementById('adminPassword').value;
-    if (pw) localStorage.setItem(LS_KEY, pw);
+// ── Load Data ──
+async function loadData() {
+  const pass = document.getElementById('adminPass').value.trim();
+  if (!pass) { showError('Informe a senha de admin.'); return; }
+  if (document.getElementById('savePass').checked) {
+    localStorage.setItem(LS_KEY, pass);
   } else {
     localStorage.removeItem(LS_KEY);
   }
-}
-
-async function carregarLicencas() {
-  const password = document.getElementById('adminPassword').value.trim();
-  if (!password) { alert('Digite a senha administrativa.'); return; }
-
-  if (document.getElementById('salvarSenha').checked) {
-    localStorage.setItem(LS_KEY, password);
-  }
-
-  const btn = document.getElementById('btnCarregar');
-  btn.disabled = true; btn.textContent = 'Carregando...';
-
+  showSpinner(true);
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_admin_list_licenses`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_admin_dashboard`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-      body: JSON.stringify({ p_admin_token: password })
+      body: JSON.stringify({ p_admin_token: pass })
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `Erro HTTP ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    if (Array.isArray(data)) {
-      allLicenses = data;
-    } else if (data && Array.isArray(data.licenses)) {
-      allLicenses = data.licenses;
-    } else if (data && data.ok === false) {
-      throw new Error(data.message || 'Senha invalida');
-    } else {
-      allLicenses = Array.isArray(data) ? data : [];
-    }
-
-    populateAppFilter();
-    aplicarFiltros();
-    updateStats(allLicenses);
-
-    document.getElementById('statsRow').style.display = '';
-    document.getElementById('filtersCard').style.display = '';
-    document.getElementById('tableCard').style.display = '';
+    if (data.error || data.ok === false) throw new Error(data.error || 'Acesso negado');
+    renderDashboard(data);
+    document.getElementById('dashContent').classList.remove('hidden');
+    document.getElementById('lastRefresh').textContent = 'Atualizado: ' + fmtDate(new Date().toISOString());
   } catch (e) {
-    alert('Erro: ' + e.message);
+    showError('Erro: ' + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = 'Carregar Licencas';
+    showSpinner(false);
   }
+  loadGitHub();
 }
 
-function populateAppFilter() {
-  const apps = [...new Set(allLicenses.map(l => l.app_id || l.app || ''))].filter(Boolean).sort();
-  const sel = document.getElementById('filterApp');
-  sel.innerHTML = '<option value="">Todos os Apps</option>' + apps.map(a => `<option value="${a}">${a}</option>`).join('');
+// ── Render Dashboard ──
+function renderDashboard(d) {
+  const L = d.licenses || {};
+  // KPIs
+  const kpis = [
+    { label: 'Total Licencas', value: fmt(L.total), sub: `${fmt(L.active)} ativas`, cls: '' },
+    { label: 'Ativadas', value: fmt(L.activated), sub: `${fmt(L.pending)} pendentes`, cls: 'accent-green' },
+    { label: 'Hoje', value: fmt(L.created_today), sub: `${fmt(L.activated_today)} ativadas`, cls: 'accent-primary' },
+    { label: 'Esta Semana', value: fmt(L.created_this_week), sub: `${fmt(L.activated_this_week)} ativadas`, cls: '' },
+    { label: 'Este Mes', value: fmt(L.created_this_month), sub: `${fmt(L.activated_this_month)} ativadas`, cls: '' },
+    { label: 'Downloads', value: '...', sub: 'GitHub releases', cls: 'accent-green', id: 'kpiDownloads' }
+  ];
+  document.getElementById('kpiRow').innerHTML = kpis.map(k =>
+    `<div class="kpi-card ${k.cls}"${k.id ? ` id="${k.id}"` : ''}>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`
+  ).join('');
+
+  // App bars
+  renderAppBars(d.by_app || []);
+  // Daily
+  renderDaily(d.daily_activity || []);
+  // Events
+  renderEvents('evtToday', d.events_today || []);
+  renderEvents('evtWeek', d.events_this_week || []);
+  renderEvents('evtMonth', d.events_this_month || []);
+  // Recent
+  renderRecent(d.recent_events || []);
+  // Licenses
+  allLicenses = d.all_licenses || [];
+  populateAppFilter(allLicenses);
+  filterLicenses();
 }
 
-function updateStats(licenses) {
-  document.getElementById('statTotal').textContent = licenses.length;
-  document.getElementById('statActive').textContent = licenses.filter(l => (l.status || '').toLowerCase() === 'active').length;
-  document.getElementById('statActivated').textContent = licenses.filter(l => l.activated_at || l.is_activated).length;
-  document.getElementById('statPending').textContent = licenses.filter(l => !l.activated_at && !l.is_activated && (l.status || '').toLowerCase() === 'active').length;
-}
-
-function aplicarFiltros() {
-  const appFilter = document.getElementById('filterApp').value.toLowerCase();
-  const search = document.getElementById('filterSearch').value.toLowerCase().trim();
-
-  let filtered = allLicenses;
-
-  if (appFilter) {
-    filtered = filtered.filter(l => (l.app_id || l.app || '').toLowerCase() === appFilter);
-  }
-
-  if (search) {
-    filtered = filtered.filter(l => {
-      const name = (l.customer_name || l.cliente || '').toLowerCase();
-      const key = (l.license_key || l.chave || '').toLowerCase();
-      return name.includes(search) || key.includes(search);
-    });
-  }
-
-  renderTable(filtered);
-  document.getElementById('countLabel').textContent = `(${filtered.length})`;
-}
-
-function formatDate(d) {
-  if (!d) return '-';
-  try {
-    const dt = new Date(d);
-    if (isNaN(dt)) return d;
-    return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  } catch { return d; }
-}
-
-function statusClass(s) {
-  if (!s) return 'status-cancelled';
-  const st = s.toLowerCase();
-  if (st === 'active') return 'status-active';
-  if (st === 'blocked') return 'status-blocked';
-  return 'status-cancelled';
-}
-
-function statusLabel(s) {
-  if (!s) return '-';
-  const st = s.toLowerCase();
-  if (st === 'active') return 'Ativo';
-  if (st === 'blocked') return 'Bloqueado';
-  if (st === 'cancelled') return 'Cancelado';
-  return s;
-}
-
-function esc(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-function renderTable(licenses) {
-  const tbody = document.getElementById('tableBody');
-  const emptyMsg = document.getElementById('emptyMsg');
-
-  if (!licenses.length) {
-    tbody.innerHTML = '';
-    emptyMsg.style.display = '';
-    return;
-  }
-
-  emptyMsg.style.display = 'none';
-
-  tbody.innerHTML = licenses.map((l, i) => {
-    const app = l.app_id || l.app || '-';
-    const key = l.license_key || l.chave || '-';
-    const name = l.customer_name || l.cliente || '-';
-    const wpp = l.whatsapp || '-';
-    const pedido = l.ml_order_id || l.pedido_ml || '-';
-    const status = l.status || '-';
-    const isActivated = !!(l.activated_at || l.is_activated);
-    const activatedDate = l.activated_at ? formatDate(l.activated_at) : '';
-    const computer = l.computer_name || l.machine_id || '-';
-    const lastAccess = formatDate(l.last_access_at || l.last_seen_at);
-    const createdAt = formatDate(l.created_at);
-    const truncKey = key.length > 22 ? key.substring(0, 22) + '...' : key;
-    const rowId = l.id || i;
-
-    let expandHtml = '';
-    if (expandedId === rowId) {
-      expandHtml = `<tr class="expand-row"><td colspan="10"><div class="expand-content"><div class="detail-grid">
-        <div class="detail-item"><div class="detail-label">Chave completa</div><div class="detail-value" style="font-family:monospace;color:var(--primary)">${esc(key)}</div></div>
-        <div class="detail-item"><div class="detail-label">App ID</div><div class="detail-value">${esc(app)}</div></div>
-        <div class="detail-item"><div class="detail-label">Cliente</div><div class="detail-value">${esc(name)}</div></div>
-        <div class="detail-item"><div class="detail-label">WhatsApp</div><div class="detail-value">${esc(wpp)}</div></div>
-        <div class="detail-item"><div class="detail-label">Pedido ML</div><div class="detail-value">${esc(String(pedido))}</div></div>
-        <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value">${esc(status)}</div></div>
-        <div class="detail-item"><div class="detail-label">Ativado em</div><div class="detail-value">${isActivated ? (activatedDate || 'Sim') : 'Nao'}</div></div>
-        <div class="detail-item"><div class="detail-label">Computador</div><div class="detail-value">${esc(computer)}</div></div>
-        <div class="detail-item"><div class="detail-label">Machine ID</div><div class="detail-value">${esc(l.machine_id || '-')}</div></div>
-        <div class="detail-item"><div class="detail-label">Ultimo acesso</div><div class="detail-value">${lastAccess}</div></div>
-        <div class="detail-item"><div class="detail-label">Criado em</div><div class="detail-value">${createdAt}</div></div>
-        <div class="detail-item"><div class="detail-label">ID</div><div class="detail-value" style="font-family:monospace;font-size:11px">${esc(String(l.id || '-'))}</div></div>
-      </div></div></td></tr>`;
-    }
-
-    return `<tr onclick="toggleExpand('${rowId}')">
-      <td><span class="badge-app">${esc(app)}</span></td>
-      <td><span class="key-mono" title="${esc(key)}">${esc(truncKey)}</span></td>
-      <td>${esc(name)}</td>
-      <td>${esc(wpp)}</td>
-      <td>${esc(String(pedido))}</td>
-      <td><span class="status-badge ${statusClass(status)}">${statusLabel(status)}</span></td>
-      <td>${isActivated ? `<span class="bool-yes">Sim</span>${activatedDate ? '<br><span style="font-size:10px;color:var(--muted)">' + activatedDate + '</span>' : ''}` : '<span class="bool-no">Nao</span>'}</td>
-      <td>${esc(computer)}</td>
-      <td>${lastAccess}</td>
-      <td>${createdAt}</td>
-    </tr>${expandHtml}`;
+// ── App Bars ──
+function renderAppBars(apps) {
+  const maxTotal = Math.max(...apps.map(a => a.total || 0), 1);
+  document.getElementById('appBars').innerHTML = apps.map(a => {
+    const pct = v => ((v || 0) / maxTotal * 100).toFixed(1);
+    return `<div class="bar-row">
+      <div class="bar-label"><span>${esc(a.app_id)}</span><span>${fmt(a.total)}</span></div>
+      <div class="bar-track">
+        <div class="bar-seg activated" style="width:${pct(a.activated)}%"></div>
+        <div class="bar-seg pending" style="width:${pct(a.pending)}%"></div>
+        <div class="bar-seg blocked" style="width:${pct(a.blocked)}%"></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
-function toggleExpand(id) {
-  expandedId = expandedId === id ? null : id;
-  aplicarFiltros();
+// ── Daily Chart ──
+function renderDaily(days) {
+  const maxVal = Math.max(...days.map(d => d.events || 0), 1);
+  document.getElementById('dailyChart').innerHTML = days.map((d, i) => {
+    const h = Math.max(((d.events || 0) / maxVal * 100), 2);
+    const showLabel = i % 5 === 0 || i === days.length - 1;
+    return `<div class="daily-col">
+      <div class="daily-bar" style="height:${h}%">
+        <div class="tooltip">${fmtShort(d.date)}: ${fmt(d.events)} eventos<br>${fmt(d.activations)} ativ. | ${fmt(d.validations)} valid. | ${fmt(d.created)} criadas</div>
+      </div>
+      ${showLabel ? `<div class="daily-date">${fmtShort(d.date)}</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
-// Enter key to load
-document.getElementById('adminPassword').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') carregarLicencas();
-});
+// ── Events Table ──
+function eventBadge(type) {
+  const map = {
+    activated: 'badge-green', validated: 'badge-blue', device_mismatch: 'badge-red',
+    invalid_key: 'badge-orange', created: 'badge-purple', blocked: 'badge-red',
+    cancelled: 'badge-gray'
+  };
+  const cls = map[type] || 'badge-gray';
+  return `<span class="badge ${cls}">${esc(type)}</span>`;
+}
+function renderEvents(id, events) {
+  if (!events.length) {
+    document.getElementById(id).innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0">Nenhum evento.</p>';
+    return;
+  }
+  document.getElementById(id).innerHTML = `<table class="event-table">
+    <thead><tr><th>Evento</th><th style="text-align:right">Qtd</th></tr></thead>
+    <tbody>${events.map(e => `<tr><td>${eventBadge(e.event_type)}</td><td style="text-align:right;font-weight:800">${fmt(e.count)}</td></tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ── Tabs ──
+function switchTab(btn, id) {
+  btn.parentElement.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.card-body').querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── Recent Feed ──
+function renderRecent(events) {
+  document.getElementById('recentFeed').innerHTML = events.slice(0, 50).map(e => {
+    return `<div class="feed-item">
+      <div class="feed-time">${fmtDate(e.created_at)}</div>
+      <div class="feed-body">
+        ${eventBadge(e.event_type)}
+        <strong style="margin-left:4px">${esc(e.app_id)}</strong>
+        <span class="trunc" title="${esc(e.license_key)}" style="margin-left:4px">${esc(truncKey(e.license_key))}</span>
+        <div class="feed-meta">${esc(e.device_name || '')} ${e.message ? '— ' + esc(e.message) : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Licenses ──
+function populateAppFilter(lics) {
+  const apps = [...new Set(lics.map(l => l.app_id).filter(Boolean))].sort();
+  const sel = document.getElementById('licAppFilter');
+  sel.innerHTML = '<option value="">Todos os apps</option>' + apps.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+}
+
+function filterLicenses() {
+  const q = (document.getElementById('licSearch').value || '').toLowerCase().trim();
+  const app = document.getElementById('licAppFilter').value;
+  const filtered = allLicenses.filter(l => {
+    if (app && l.app_id !== app) return false;
+    if (!q) return true;
+    return [l.customer_name, l.license_key, l.customer_phone, l.app_id, l.customer_email, l.mercado_livre_order, l.device_name]
+      .some(v => v && v.toLowerCase().includes(q));
+  });
+  document.getElementById('licCount').textContent = fmt(filtered.length);
+  renderLicTable(filtered);
+}
+
+function statusBadge(s) {
+  const m = { active: 'badge-green', blocked: 'badge-red', cancelled: 'badge-gray' };
+  return `<span class="badge ${m[s] || 'badge-yellow'}">${esc(s || 'pending')}</span>`;
+}
+
+function renderLicTable(lics) {
+  const tbody = document.getElementById('licBody');
+  tbody.innerHTML = lics.map((l, i) => {
+    const activated = l.activated_at
+      ? `<span style="color:var(--green)" title="${fmtDate(l.activated_at)}">&#10003;</span>`
+      : `<span style="color:var(--red)">&#10007;</span>`;
+    return `<tr onclick="toggleLicDetail(this,${i})" data-idx="${i}">
+      <td>${esc(l.app_id)}</td>
+      <td><span class="trunc" title="${esc(l.license_key)}">${esc(truncKey(l.license_key))}</span></td>
+      <td>${esc(l.customer_name || '—')}</td>
+      <td>${esc(l.customer_phone || '—')}</td>
+      <td>${esc(l.mercado_livre_order || '—')}</td>
+      <td>${statusBadge(l.status)}</td>
+      <td>${activated}</td>
+      <td style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.device_name || '—')}</td>
+      <td>${fmtShort(l.last_seen_at)}</td>
+      <td>${fmtShort(l.created_at)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function toggleLicDetail(tr, idx) {
+  const next = tr.nextElementSibling;
+  if (next && next.classList.contains('lic-expanded')) {
+    next.remove();
+    return;
+  }
+  // Remove any other expanded
+  document.querySelectorAll('.lic-expanded').forEach(el => el.remove());
+  const l = allLicenses[idx];
+  if (!l) return;
+  const detail = document.createElement('tr');
+  detail.className = 'lic-expanded';
+  detail.innerHTML = `<td colspan="10"><div class="detail-grid">
+    <div><span class="detail-label">App:</span> ${esc(l.app_id)}</div>
+    <div><span class="detail-label">Chave:</span> ${esc(l.license_key)}</div>
+    <div><span class="detail-label">Cliente:</span> ${esc(l.customer_name || '—')}</div>
+    <div><span class="detail-label">Email:</span> ${esc(l.customer_email || '—')}</div>
+    <div><span class="detail-label">WhatsApp:</span> ${esc(l.customer_phone || '—')}</div>
+    <div><span class="detail-label">Pedido ML:</span> ${esc(l.mercado_livre_order || '—')}</div>
+    <div><span class="detail-label">Status:</span> ${esc(l.status)}</div>
+    <div><span class="detail-label">Ativacoes:</span> ${l.activation_count || 0}</div>
+    <div><span class="detail-label">Dispositivo:</span> ${esc(l.device_name || '—')}</div>
+    <div><span class="detail-label">SO:</span> ${esc(l.device_os || '—')}</div>
+    <div><span class="detail-label">Ativado em:</span> ${fmtDate(l.activated_at)}</div>
+    <div><span class="detail-label">Ultimo acesso:</span> ${fmtDate(l.last_seen_at)}</div>
+    <div><span class="detail-label">Expira em:</span> ${fmtDate(l.expires_at)}</div>
+    <div><span class="detail-label">Criado em:</span> ${fmtDate(l.created_at)}</div>
+    <div style="grid-column:1/-1"><span class="detail-label">Notas:</span> ${esc(l.notes || '—')}</div>
+  </div></td>`;
+  tr.after(detail);
+}
+
+// ── Collapsible ──
+function toggleCollapse(bodyId, headerId) {
+  document.getElementById(bodyId).classList.toggle('open');
+  document.getElementById(headerId).classList.toggle('open');
+}
+
+// ── GitHub ──
+async function loadGitHub() {
+  const cached = getGhCache();
+  if (cached) {
+    renderGitHub(cached);
+    return;
+  }
+  try {
+    const results = await Promise.all(
+      GITHUB_REPOS.map(repo =>
+        fetch(`https://api.github.com/repos/GhuzzBeatz/${repo}/releases`)
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => [])
+          .then(releases => {
+            let totalDl = 0;
+            let latest = null;
+            let latestDate = null;
+            releases.forEach(rel => {
+              (rel.assets || []).forEach(a => { totalDl += a.download_count || 0; });
+              if (!latest) { latest = rel.tag_name || rel.name; latestDate = rel.published_at || rel.created_at; }
+            });
+            return { name: repo, version: latest, downloads: totalDl, updated: latestDate, releaseCount: releases.length };
+          })
+      )
+    );
+    setGhCache(results);
+    renderGitHub(results);
+  } catch (e) {
+    document.getElementById('ghGrid').innerHTML = `<p style="color:var(--red);font-size:12px">Erro ao carregar repos: ${esc(e.message)}</p>`;
+  }
+}
+
+function getGhCache() {
+  try {
+    const raw = localStorage.getItem(GH_CACHE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > GH_CACHE_TTL) return null;
+    return obj.data;
+  } catch { return null; }
+}
+function setGhCache(data) {
+  localStorage.setItem(GH_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+}
+
+function renderGitHub(repos) {
+  const totalDl = repos.reduce((s, r) => s + r.downloads, 0);
+  document.getElementById('ghCount').textContent = `${repos.length} repos`;
+  // Update KPI
+  const kpiDl = document.getElementById('kpiDownloads');
+  if (kpiDl) {
+    kpiDl.querySelector('.kpi-value').textContent = fmt(totalDl);
+  }
+  document.getElementById('ghGrid').innerHTML = repos
+    .sort((a, b) => b.downloads - a.downloads)
+    .map(r => `<div class="gh-card">
+      <div class="gh-name">${esc(r.name)}</div>
+      <div class="gh-dl">${fmt(r.downloads)}</div>
+      <div class="gh-meta">
+        ${r.version ? `v${esc(r.version)}` : 'Sem release'}
+        ${r.updated ? `<br>${fmtShort(r.updated)}` : ''}
+      </div>
+    </div>`).join('');
+}
 </script>
 </body>
 </html>
