@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Mercado Livre — Analytics</title>
+<style>
+:root {
+  --bg: #0f1117; --bg2: #161b27; --card: #1c2233; --card2: #222840;
+  --border: #2a3350; --border2: #3a4570;
+  --primary: #4f8ef7; --primary2: #3a7af0;
+  --primary-bg: rgba(79,142,247,.12); --primary-bdr: rgba(79,142,247,.3);
+  --green: #22d3a0; --green-bg: rgba(34,211,160,.12);
+  --red: #f05252; --red-bg: rgba(240,82,82,.12);
+  --orange: #f0a052; --orange-bg: rgba(240,160,82,.12);
+  --purple: #a06ef7; --purple-bg: rgba(160,110,247,.12);
+  --yellow: #f0c752; --yellow-bg: rgba(240,199,82,.12);
+  --muted: #5a6480; --fg: #e8eaf0; --fg2: #a0a8c0;
+  --radius: 14px; --radius-sm: 9px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg);min-height:100dvh;padding:12px;padding-bottom:40px;overflow-x:hidden}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1200px;margin:0 auto}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2);border-radius:3px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ── Header ── */
+.header{text-align:center;padding:8px 0 16px;position:relative}
+.header h1{font-size:20px;font-weight:900;letter-spacing:-.02em}
+.header h1 span{color:var(--primary)}
+.header-links{display:flex;gap:16px;justify-content:center;margin-top:6px}
+.header-links a{font-size:12px;font-weight:700;color:var(--primary)}
+.header-actions{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;align-items:center}
+.conn-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.conn-badge.online{background:var(--green-bg);color:var(--green)}
+.conn-badge.offline{background:var(--red-bg);color:var(--red)}
+.conn-badge::before{content:'';width:7px;height:7px;border-radius:50%;display:inline-block}
+.conn-badge.online::before{background:var(--green)}
+.conn-badge.offline::before{background:var(--red)}
+
+/* ── Buttons ── */
+.btn{min-height:44px;padding:11px 20px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;-webkit-tap-highlight-color:transparent}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary2)}
+.btn-sm{min-height:36px;padding:8px 14px;font-size:12px;border-radius:7px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--fg2)}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#d84444}
+.btn-green{background:var(--green);color:#0f1117}
+.btn-green:hover{background:#1cc090}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;animation:fadeUp .35s ease both}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--fg2);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-body{padding:14px 16px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Period Tabs (sticky) ── */
+.period-bar{position:sticky;top:0;z-index:100;background:var(--bg);padding:8px 0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.period-tabs{display:flex;gap:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.period-tab{flex:1;padding:10px 8px;text-align:center;font-size:12px;font-weight:800;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;min-height:44px;-webkit-tap-highlight-color:transparent;transition:all .15s}
+.period-tab.active{background:var(--primary);color:#fff}
+.period-tab:hover:not(.active){background:var(--bg2);color:var(--fg2)}
+
+/* ── KPI Row ── */
+.kpi-scroll{display:flex;gap:10px;overflow-x:auto;padding:2px 0 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.kpi-scroll::-webkit-scrollbar{display:none}
+.kpi-card{flex:0 0 auto;min-width:140px;width:140px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;scroll-snap-align:start;text-align:center}
+.kpi-card .kpi-value{font-size:28px;font-weight:900;line-height:1.1;color:var(--fg)}
+.kpi-card .kpi-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+.kpi-card .kpi-sub{font-size:11px;color:var(--fg2);margin-top:2px}
+.kpi-card.accent-green .kpi-value{color:var(--green)}
+.kpi-card.accent-primary .kpi-value{color:var(--primary)}
+.kpi-card.accent-yellow .kpi-value{color:var(--yellow)}
+.kpi-card.accent-orange .kpi-value{color:var(--orange)}
+
+/* ── Bar Charts ── */
+.chart-container{display:flex;align-items:flex-end;gap:3px;height:160px;padding:16px 0 0;overflow-x:auto;scrollbar-width:none}
+.chart-container::-webkit-scrollbar{display:none}
+.chart-col{flex:1;min-width:20px;max-width:50px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;transition:height .4s ease;cursor:pointer;position:relative;min-height:2px}
+.chart-bar:hover{filter:brightness(1.2)}
+.chart-bar .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:10px;white-space:nowrap;color:var(--fg);z-index:10;pointer-events:none}
+.chart-bar:hover .tip{display:block}
+.chart-date{font-size:9px;color:var(--muted);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;text-align:center}
+.chart-bar.bar-blue{background:var(--primary)}
+.chart-bar.bar-green{background:var(--green)}
+
+/* ── Tables ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:8px 10px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--fg2);vertical-align:middle}
+.tbl tr:hover td{background:rgba(79,142,247,.04)}
+.tbl-wrap{overflow-x:auto;scrollbar-width:thin}
+
+/* ── Search ── */
+.search-box{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--fg);font-size:13px;font-family:inherit;outline:none;margin-bottom:12px}
+.search-box:focus{border-color:var(--primary)}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-orange{background:var(--orange-bg);color:var(--orange)}
+.badge-blue{background:var(--primary-bg);color:var(--primary)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-gray{background:rgba(90,100,128,.15);color:var(--muted)}
+
+/* ── Rank number ── */
+.rank{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:12px;font-weight:900;background:var(--bg2);color:var(--primary);border:1px solid var(--border)}
+.rank.gold{background:rgba(240,199,82,.15);color:var(--yellow);border-color:rgba(240,199,82,.3)}
+.rank.silver{background:rgba(168,175,195,.12);color:#c0c8e0;border-color:rgba(168,175,195,.25)}
+.rank.bronze{background:rgba(240,160,82,.12);color:var(--orange);border-color:rgba(240,160,82,.25)}
+
+/* ── Item Cards Grid ── */
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.item-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;transition:border-color .15s}
+.item-card:hover{border-color:var(--primary)}
+.item-card-img{width:100%;height:140px;object-fit:contain;background:var(--card);display:block}
+.item-card-body{padding:10px 12px}
+.item-card-title{font-size:12px;font-weight:700;color:var(--fg);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
+.item-card-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--fg2);margin-top:4px}
+.item-card-price{font-size:16px;font-weight:900;color:var(--green)}
+
+/* ── Expandable row ── */
+.expand-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px 8px;border-radius:4px;transition:color .15s}
+.expand-btn:hover{color:var(--primary)}
+.expand-row{display:none}
+.expand-row.open{display:table-row}
+.expand-content{padding:12px 16px;background:var(--bg2);font-size:11px;color:var(--fg2);line-height:1.7}
+
+/* ── Loading / Empty ── */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 16px;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-msg{text-align:center;padding:30px 16px;color:var(--muted);font-size:13px}
+
+/* ── Connect Screen ── */
+.connect-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px;animation:fadeUp .5s ease}
+.connect-screen .logo{font-size:48px;margin-bottom:8px}
+.connect-screen h2{font-size:22px;font-weight:900}
+.connect-screen p{font-size:14px;color:var(--fg2);max-width:400px;line-height:1.6}
+
+/* ── Pagination ── */
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.page-btn{min-width:36px;min-height:36px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--fg2);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-btn:hover:not(.active){border-color:var(--primary);color:var(--primary)}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .items-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .item-card-img{height:110px}
+  .kpi-card{min-width:120px;width:120px}
+  .kpi-card .kpi-value{font-size:22px}
+  .chart-container{height:120px}
+  .period-tab{font-size:11px;padding:8px 4px}
+  .tbl td,.tbl th{padding:6px 8px}
+  .hide-mobile{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1><span>Mercado Livre</span> — Analytics</h1>
+    <div class="header-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="index.html">Gerador</a>
+    </div>
+    <div class="header-actions">
+      <span class="conn-badge offline" id="connBadge">Desconectado</span>
+      <button class="btn btn-sm btn-green" id="btnConnect" onclick="connect()">Conectar</button>
+      <button class="btn btn-sm btn-danger" id="btnDisconnect" onclick="disconnect()" style="display:none">Desconectar</button>
+      <button class="btn btn-sm btn-outline" id="btnRefresh" onclick="loadAll()" style="display:none">&#8635; Atualizar</button>
+    </div>
+  </div>
+
+  <!-- Connect Screen (shown when not authenticated) -->
+  <div id="connectScreen" class="connect-screen" style="display:none">
+    <div class="logo">&#128722;</div>
+    <h2>Conectar Mercado Livre</h2>
+    <p>Conecte sua conta do Mercado Livre para visualizar vendas, receita, produtos e mais.</p>
+    <button class="btn btn-green" onclick="connect()">&#128279; Conectar Mercado Livre</button>
+  </div>
+
+  <!-- Main Content (shown when authenticated) -->
+  <div id="mainContent" style="display:none">
+
+    <!-- Period Filter -->
+    <div class="period-bar">
+      <div class="period-tabs" id="periodTabs">
+        <button class="period-tab" data-days="0" onclick="setPeriod(0)">Hoje</button>
+        <button class="period-tab" data-days="7" onclick="setPeriod(7)">7 dias</button>
+        <button class="period-tab active" data-days="30" onclick="setPeriod(30)">30 dias</button>
+        <button class="period-tab" data-days="60" onclick="setPeriod(60)">60 dias</button>
+        <button class="period-tab" data-days="90" onclick="setPeriod(90)">90 dias</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-scroll" id="kpiRow">
+      <div class="kpi-card"><div class="kpi-value">--</div><div class="kpi-label">Total Vendas</div></div>
+      <div class="kpi-card accent-green"><div class="kpi-value">--</div><div class="kpi-label">Receita Total</div></div>
+      <div class="kpi-card accent-primary"><div class="kpi-value">--</div><div class="kpi-label">Ticket Medio</div></div>
+      <div class="kpi-card"><div class="kpi-value">--</div><div class="kpi-label">Anuncios Ativos</div></div>
+      <div class="kpi-card accent-yellow"><div class="kpi-value">--</div><div class="kpi-label">Visitas</div></div>
+      <div class="kpi-card accent-orange"><div class="kpi-value">--</div><div class="kpi-label">Taxa Conversao</div></div>
+    </div>
+
+    <!-- Vendas Diarias -->
+    <div class="card">
+      <div class="card-header">Vendas Diarias</div>
+      <div class="card-body">
+        <div class="chart-container" id="chartVendas"></div>
+      </div>
+    </div>
+
+    <!-- Receita Diaria -->
+    <div class="card">
+      <div class="card-header">Receita Diaria</div>
+      <div class="card-body">
+        <div class="chart-container" id="chartReceita"></div>
+      </div>
+    </div>
+
+    <!-- Top Produtos -->
+    <div class="card">
+      <div class="card-header">Top Produtos</div>
+      <div class="card-body">
+        <div class="tbl-wrap">
+          <table class="tbl" id="tblTop">
+            <thead>
+              <tr><th>#</th><th>Produto</th><th>Qtd</th><th>Receita</th><th class="hide-mobile">Preco Unit.</th></tr>
+            </thead>
+            <tbody id="topBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-msg" id="topEmpty" style="display:none">Nenhum produto encontrado.</div>
+      </div>
+    </div>
+
+    <!-- Todos os Pedidos -->
+    <div class="card">
+      <div class="card-header">
+        Todos os Pedidos
+        <span id="ordersCount" style="font-weight:400;font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div class="card-body">
+        <input type="text" class="search-box" id="orderSearch" placeholder="Buscar pedido, produto, comprador..." oninput="filterOrders()">
+        <div class="tbl-wrap">
+          <table class="tbl" id="tblOrders">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Pedido</th>
+                <th>Produto</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th class="hide-mobile">Comprador</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-msg" id="ordersEmpty" style="display:none">Nenhum pedido encontrado.</div>
+        <div class="pagination" id="ordersPagination"></div>
+      </div>
+    </div>
+
+    <!-- Anuncios Ativos -->
+    <div class="card">
+      <div class="card-header">
+        Anuncios Ativos
+        <span id="itemsCount" style="font-weight:400;font-size:11px;color:var(--muted)"></span>
+      </div>
+      <div class="card-body">
+        <div class="items-grid" id="itemsGrid"></div>
+        <div class="empty-msg" id="itemsEmpty" style="display:none">Nenhum anuncio ativo.</div>
+      </div>
+    </div>
+
+  </div><!-- /mainContent -->
+
+  <!-- Global Loading -->
+  <div class="loading" id="globalLoading" style="display:none">
+    <div class="spinner"></div>
+    <span style="font-size:13px;color:var(--fg2)">Carregando dados...</span>
+  </div>
+
+</div>
+
+<script>
+/* ================================================================
+   Mercado Livre Analytics — GHZ
+   ================================================================ */
+
+const PROXY = 'https://wpkaaxarresldcstaatj.supabase.co/functions/v1/ml-proxy';
+const ML_CLIENT_ID = '6722973352512823';
+const REDIRECT_URI = 'https://ghuzzbeatz.github.io/html-venda/callback.html';
+const ML_LS = '@GHZ:ml_token';
+const CACHE_PREFIX = '@GHZ:ml_cache:';
+const CACHE_TTL = 5 * 60 * 1000; // 5 min
+
+let currentPeriod = 30;
+let allOrders = [];
+let allOrdersFiltered = [];
+let ordersPage = 0;
+const ORDERS_PER_PAGE = 20;
+
+/* ── Token Management ── */
+function getToken() {
+  try { return JSON.parse(localStorage.getItem(ML_LS)); } catch { return null; }
+}
+
+function saveToken(tk) {
+  localStorage.setItem(ML_LS, JSON.stringify(tk));
+}
+
+function isConnected() {
+  const tk = getToken();
+  return tk && tk.access_token && tk.user_id;
+}
+
+function isTokenExpired(tk) {
+  return tk && tk.expires_at && Date.now() > tk.expires_at - 60000;
+}
+
+async function ensureValidToken() {
+  let tk = getToken();
+  if (!tk) return null;
+  if (isTokenExpired(tk)) {
+    try {
+      const data = await fetchJSON(PROXY, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'refresh', refresh_token: tk.refresh_token })
+      });
+      if (data.access_token) {
+        tk = {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token || tk.refresh_token,
+          expires_at: Date.now() + (data.expires_in || 21600) * 1000,
+          user_id: data.user_id || tk.user_id
+        };
+        saveToken(tk);
+      } else {
+        disconnect();
+        return null;
+      }
+    } catch (e) {
+      console.error('Refresh failed:', e);
+      disconnect();
+      return null;
+    }
+  }
+  return tk;
+}
+
+/* ── Connect / Disconnect ── */
+function connect() {
+  const redir = encodeURIComponent(REDIRECT_URI + '?from=mercadolivre.html');
+  window.location.href = 'https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=' + ML_CLIENT_ID + '&redirect_uri=' + redir;
+}
+
+function disconnect() {
+  localStorage.removeItem(ML_LS);
+  clearCache();
+  updateUI();
+}
+
+/* ── Cache ── */
+function cacheKey(path) { return CACHE_PREFIX + path; }
+
+function getCached(path) {
+  try {
+    const raw = sessionStorage.getItem(cacheKey(path));
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    if (Date.now() - c.ts > CACHE_TTL) { sessionStorage.removeItem(cacheKey(path)); return null; }
+    return c.data;
+  } catch { return null; }
+}
+
+function setCache(path, data) {
+  try { sessionStorage.setItem(cacheKey(path), JSON.stringify({ ts: Date.now(), data })); } catch {}
+}
+
+function clearCache() {
+  const keys = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const k = sessionStorage.key(i);
+    if (k.startsWith(CACHE_PREFIX)) keys.push(k);
+  }
+  keys.forEach(k => sessionStorage.removeItem(k));
+}
+
+/* ── Fetch helpers ── */
+async function fetchJSON(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function mlApi(path) {
+  const cached = getCached(path);
+  if (cached) return cached;
+
+  const tk = await ensureValidToken();
+  if (!tk) throw new Error('Not authenticated');
+
+  const data = await fetchJSON(PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'api', path: path, token: tk.access_token })
+  });
+
+  if (data.error === 'not_found') return data;
+  setCache(path, data);
+  return data;
+}
+
+/* ── Date helpers ── */
+function dateStr(d) {
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yy = String(d.getFullYear());
+  return yy + '-' + mm + '-' + dd;
+}
+
+function fmtDateBR(s) {
+  if (!s) return '--';
+  const d = new Date(s);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function fmtDateTimeBR(s) {
+  if (!s) return '--';
+  const d = new Date(s);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) +
+    ' ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function fmtShortDate(s) {
+  const d = new Date(s);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+function fmtMoney(v) {
+  return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtNum(v) {
+  return Number(v || 0).toLocaleString('pt-BR');
+}
+
+function periodFromDate() {
+  const now = new Date();
+  if (currentPeriod === 0) {
+    now.setHours(0, 0, 0, 0);
+    return now.toISOString();
+  }
+  const d = new Date();
+  d.setDate(d.getDate() - currentPeriod);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+/* ── UI State ── */
+function updateUI() {
+  const connected = isConnected();
+  const badge = document.getElementById('connBadge');
+  const btnConn = document.getElementById('btnConnect');
+  const btnDisc = document.getElementById('btnDisconnect');
+  const btnRef = document.getElementById('btnRefresh');
+  const screen = document.getElementById('connectScreen');
+  const main = document.getElementById('mainContent');
+
+  if (connected) {
+    badge.className = 'conn-badge online';
+    badge.textContent = 'Conectado';
+    btnConn.style.display = 'none';
+    btnDisc.style.display = '';
+    btnRef.style.display = '';
+    screen.style.display = 'none';
+    main.style.display = '';
+  } else {
+    badge.className = 'conn-badge offline';
+    badge.textContent = 'Desconectado';
+    btnConn.style.display = '';
+    btnDisc.style.display = 'none';
+    btnRef.style.display = 'none';
+    screen.style.display = '';
+    main.style.display = 'none';
+  }
+}
+
+function setPeriod(days) {
+  currentPeriod = days;
+  document.querySelectorAll('.period-tab').forEach(t => {
+    t.classList.toggle('active', Number(t.dataset.days) === days);
+  });
+  clearCache();
+  loadAll();
+}
+
+function showLoading(show) {
+  document.getElementById('globalLoading').style.display = show ? 'flex' : 'none';
+}
+
+/* ── Fetch Orders (paginated) ── */
+async function fetchAllOrders(uid) {
+  const from = periodFromDate();
+  const orders = [];
+  let offset = 0;
+  const limit = 50;
+  let total = 999;
+
+  while (offset < total && offset < 200) {
+    const path = '/orders/search?seller=' + uid +
+      '&order.date_created.from=' + encodeURIComponent(from) +
+      '&sort=date_desc&limit=' + limit + '&offset=' + offset;
+    try {
+      const data = await mlApi(path);
+      if (data.results) {
+        orders.push(...data.results);
+        total = data.paging ? data.paging.total : orders.length;
+      } else {
+        break;
+      }
+    } catch (e) {
+      console.error('Orders fetch error at offset', offset, e);
+      break;
+    }
+    offset += limit;
+    // small delay to avoid rate limit
+    if (offset < total) await new Promise(r => setTimeout(r, 300));
+  }
+  return orders;
+}
+
+/* ── Fetch Active Items ── */
+async function fetchActiveItems(uid) {
+  const items = [];
+  let offset = 0;
+  const limit = 50;
+  let total = 999;
+
+  while (offset < total && offset < 200) {
+    const path = '/users/' + uid + '/items/search?status=active&limit=' + limit + '&offset=' + offset;
+    try {
+      const data = await mlApi(path);
+      if (data.results) {
+        total = data.paging ? data.paging.total : data.results.length;
+        items.push(...data.results);
+      } else {
+        break;
+      }
+    } catch (e) {
+      console.error('Items fetch error', e);
+      break;
+    }
+    offset += limit;
+    if (offset < total) await new Promise(r => setTimeout(r, 300));
+  }
+  return items;
+}
+
+/* ── Fetch item details in batch ── */
+async function fetchItemDetails(ids) {
+  const details = {};
+  // fetch up to 20 at a time via individual calls (ML API doesnt support multi-get well)
+  const batch = ids.slice(0, 50);
+  const promises = batch.map(async id => {
+    try {
+      const d = await mlApi('/items/' + id);
+      details[id] = d;
+    } catch {}
+  });
+  // run 5 at a time
+  for (let i = 0; i < promises.length; i += 5) {
+    await Promise.all(promises.slice(i, i + 5));
+    if (i + 5 < promises.length) await new Promise(r => setTimeout(r, 200));
+  }
+  return details;
+}
+
+/* ── Fetch visits ── */
+async function fetchVisits(ids) {
+  if (!ids.length) return {};
+  const visits = {};
+  // ML API accepts up to 50 ids comma-separated
+  for (let i = 0; i < ids.length; i += 50) {
+    const chunk = ids.slice(i, i + 50).join(',');
+    try {
+      const data = await mlApi('/visits/items?ids=' + chunk);
+      if (Array.isArray(data)) {
+        data.forEach(v => { if (v.id) visits[v.id] = v.total_visits || 0; });
+      }
+    } catch {}
+    if (i + 50 < ids.length) await new Promise(r => setTimeout(r, 200));
+  }
+  return visits;
+}
+
+/* ── Main Load ── */
+async function loadAll() {
+  if (!isConnected()) return;
+  showLoading(true);
+
+  const tk = await ensureValidToken();
+  if (!tk) { updateUI(); showLoading(false); return; }
+  const uid = tk.user_id;
+
+  try {
+    // Fetch orders and active items in parallel
+    const [orders, activeItemIds] = await Promise.all([
+      fetchAllOrders(uid),
+      fetchActiveItems(uid)
+    ]);
+
+    // Extract unique item IDs from orders
+    const orderItemIds = new Set();
+    orders.forEach(o => {
+      if (o.order_items) o.order_items.forEach(oi => { if (oi.item && oi.item.id) orderItemIds.add(oi.item.id); });
+    });
+
+    // Fetch item details and visits
+    const allItemIds = [...new Set([...orderItemIds, ...activeItemIds])];
+    const [itemDetails, visits] = await Promise.all([
+      fetchItemDetails(allItemIds),
+      fetchVisits(activeItemIds.length ? activeItemIds : [...orderItemIds])
+    ]);
+
+    // Process
+    allOrders = orders;
+    renderKPIs(orders, activeItemIds, visits);
+    renderDailyCharts(orders);
+    renderTopProdutos(orders, itemDetails);
+    renderOrders(orders, itemDetails);
+    renderItems(activeItemIds, itemDetails, visits);
+
+  } catch (e) {
+    console.error('Load error:', e);
+  }
+
+  showLoading(false);
+}
+
+/* ── Render KPIs ── */
+function renderKPIs(orders, activeItemIds, visits) {
+  const paid = orders.filter(o => o.status === 'paid');
+  const totalVendas = paid.length;
+  const receita = paid.reduce((s, o) => s + (o.total_amount || 0), 0);
+  const ticket = totalVendas > 0 ? receita / totalVendas : 0;
+  const anuncios = activeItemIds.length;
+  const totalVisits = Object.values(visits).reduce((s, v) => s + v, 0);
+  const conversao = totalVisits > 0 ? (totalVendas / totalVisits * 100) : 0;
+
+  const container = document.getElementById('kpiRow');
+  container.innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-value">${fmtNum(totalVendas)}</div>
+      <div class="kpi-label">Total Vendas</div>
+      <div class="kpi-sub">pedidos pagos</div>
+    </div>
+    <div class="kpi-card accent-green">
+      <div class="kpi-value">${fmtMoney(receita)}</div>
+      <div class="kpi-label">Receita Total</div>
+    </div>
+    <div class="kpi-card accent-primary">
+      <div class="kpi-value">${fmtMoney(ticket)}</div>
+      <div class="kpi-label">Ticket Medio</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${fmtNum(anuncios)}</div>
+      <div class="kpi-label">Anuncios Ativos</div>
+    </div>
+    <div class="kpi-card accent-yellow">
+      <div class="kpi-value">${fmtNum(totalVisits)}</div>
+      <div class="kpi-label">Visitas</div>
+    </div>
+    <div class="kpi-card accent-orange">
+      <div class="kpi-value">${conversao.toFixed(1)}%</div>
+      <div class="kpi-label">Taxa Conversao</div>
+    </div>
+  `;
+}
+
+/* ── Render Daily Charts ── */
+function renderDailyCharts(orders) {
+  const paid = orders.filter(o => o.status === 'paid');
+
+  // Group by date
+  const byDate = {};
+  paid.forEach(o => {
+    const d = o.date_created ? o.date_created.substring(0, 10) : null;
+    if (!d) return;
+    if (!byDate[d]) byDate[d] = { count: 0, revenue: 0 };
+    byDate[d].count++;
+    byDate[d].revenue += o.total_amount || 0;
+  });
+
+  // Fill missing dates
+  const dates = [];
+  const now = new Date();
+  const days = currentPeriod === 0 ? 1 : currentPeriod;
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    dates.push(dateStr(d));
+  }
+
+  // Compute max values
+  let maxCount = 0, maxRev = 0;
+  dates.forEach(d => {
+    const v = byDate[d];
+    if (v) {
+      if (v.count > maxCount) maxCount = v.count;
+      if (v.revenue > maxRev) maxRev = v.revenue;
+    }
+  });
+  if (maxCount === 0) maxCount = 1;
+  if (maxRev === 0) maxRev = 1;
+
+  // Render vendas chart
+  const chartV = document.getElementById('chartVendas');
+  chartV.innerHTML = dates.map(d => {
+    const v = byDate[d] || { count: 0 };
+    const h = Math.max(2, (v.count / maxCount) * 100);
+    return `<div class="chart-col">
+      <div class="chart-bar bar-blue" style="height:${h}%">
+        <div class="tip">${fmtShortDate(d)}: ${v.count} venda${v.count !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="chart-date">${fmtShortDate(d)}</div>
+    </div>`;
+  }).join('');
+
+  // Render receita chart
+  const chartR = document.getElementById('chartReceita');
+  chartR.innerHTML = dates.map(d => {
+    const v = byDate[d] || { revenue: 0 };
+    const h = Math.max(2, (v.revenue / maxRev) * 100);
+    return `<div class="chart-col">
+      <div class="chart-bar bar-green" style="height:${h}%">
+        <div class="tip">${fmtShortDate(d)}: ${fmtMoney(v.revenue)}</div>
+      </div>
+      <div class="chart-date">${fmtShortDate(d)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Render Top Produtos ── */
+function renderTopProdutos(orders, itemDetails) {
+  const paid = orders.filter(o => o.status === 'paid');
+  const byItem = {};
+
+  paid.forEach(o => {
+    if (!o.order_items) return;
+    o.order_items.forEach(oi => {
+      const id = oi.item ? oi.item.id : 'unknown';
+      const title = (itemDetails[id] && itemDetails[id].title) || (oi.item && oi.item.title) || 'Produto';
+      const price = oi.unit_price || 0;
+      const qty = oi.quantity || 1;
+      if (!byItem[id]) byItem[id] = { title, qty: 0, revenue: 0, price };
+      byItem[id].qty += qty;
+      byItem[id].revenue += price * qty;
+    });
+  });
+
+  const sorted = Object.values(byItem).sort((a, b) => b.qty - a.qty);
+  const body = document.getElementById('topBody');
+  const empty = document.getElementById('topEmpty');
+
+  if (sorted.length === 0) {
+    body.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  body.innerHTML = sorted.map((p, i) => {
+    const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    return `<tr>
+      <td><span class="rank ${cls}">${i + 1}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg);font-weight:600">${esc(p.title)}</td>
+      <td style="font-weight:700">${fmtNum(p.qty)}</td>
+      <td style="color:var(--green);font-weight:700">${fmtMoney(p.revenue)}</td>
+      <td class="hide-mobile">${fmtMoney(p.price)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Render Orders ── */
+function renderOrders(orders, itemDetails) {
+  allOrders = orders.map(o => {
+    const items = o.order_items || [];
+    const firstItem = items[0] || {};
+    const itemId = firstItem.item ? firstItem.item.id : null;
+    const detail = itemId && itemDetails[itemId] ? itemDetails[itemId] : {};
+    return {
+      id: o.id,
+      date: o.date_created,
+      title: detail.title || (firstItem.item && firstItem.item.title) || 'Produto',
+      amount: o.total_amount || 0,
+      status: o.status || 'unknown',
+      buyer: o.buyer ? o.buyer.nickname : '--',
+      buyerName: o.buyer ? (o.buyer.first_name || '') + ' ' + (o.buyer.last_name || '') : '',
+      items: items,
+      currency: o.currency_id || 'BRL',
+      itemDetails: detail,
+      shipping: o.shipping || {}
+    };
+  });
+
+  allOrdersFiltered = [...allOrders];
+  ordersPage = 0;
+  document.getElementById('orderSearch').value = '';
+  renderOrdersPage();
+}
+
+function filterOrders() {
+  const q = document.getElementById('orderSearch').value.toLowerCase().trim();
+  if (!q) {
+    allOrdersFiltered = [...allOrders];
+  } else {
+    allOrdersFiltered = allOrders.filter(o =>
+      o.title.toLowerCase().includes(q) ||
+      String(o.id).includes(q) ||
+      o.buyer.toLowerCase().includes(q) ||
+      o.buyerName.toLowerCase().includes(q)
+    );
+  }
+  ordersPage = 0;
+  renderOrdersPage();
+}
+
+function renderOrdersPage() {
+  const body = document.getElementById('ordersBody');
+  const empty = document.getElementById('ordersEmpty');
+  const countEl = document.getElementById('ordersCount');
+
+  countEl.textContent = '(' + allOrdersFiltered.length + ')';
+
+  if (allOrdersFiltered.length === 0) {
+    body.innerHTML = '';
+    empty.style.display = '';
+    document.getElementById('ordersPagination').innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const start = ordersPage * ORDERS_PER_PAGE;
+  const page = allOrdersFiltered.slice(start, start + ORDERS_PER_PAGE);
+
+  body.innerHTML = page.map((o, idx) => {
+    const statusMap = {
+      paid: { label: 'Pago', cls: 'badge-green' },
+      cancelled: { label: 'Cancelado', cls: 'badge-red' },
+      pending: { label: 'Pendente', cls: 'badge-yellow' },
+      confirmed: { label: 'Confirmado', cls: 'badge-blue' }
+    };
+    const st = statusMap[o.status] || { label: o.status, cls: 'badge-gray' };
+    const rowId = 'exp_' + start + '_' + idx;
+
+    return `<tr>
+      <td style="white-space:nowrap">${fmtDateTimeBR(o.date)}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">#${o.id}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--fg)">${esc(o.title)}</td>
+      <td style="font-weight:700;color:var(--green);white-space:nowrap">${fmtMoney(o.amount)}</td>
+      <td><span class="badge ${st.cls}">${st.label}</span></td>
+      <td class="hide-mobile">${esc(o.buyer)}</td>
+      <td><button class="expand-btn" onclick="toggleRow('${rowId}',this)" title="Detalhes">&#9660;</button></td>
+    </tr>
+    <tr class="expand-row" id="${rowId}">
+      <td colspan="7" style="padding:0">
+        <div class="expand-content">
+          <strong>Pedido:</strong> #${o.id}<br>
+          <strong>Data:</strong> ${fmtDateTimeBR(o.date)}<br>
+          <strong>Comprador:</strong> ${esc(o.buyer)} ${o.buyerName ? '(' + esc(o.buyerName.trim()) + ')' : ''}<br>
+          <strong>Produto:</strong> ${esc(o.title)}<br>
+          <strong>Valor Total:</strong> ${fmtMoney(o.amount)} (${o.currency})<br>
+          <strong>Status:</strong> ${o.status}<br>
+          ${o.items.length > 1 ? '<strong>Itens:</strong> ' + o.items.map(i => esc((i.item && i.item.title) || 'Item') + ' x' + i.quantity).join(', ') + '<br>' : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Pagination
+  const totalPages = Math.ceil(allOrdersFiltered.length / ORDERS_PER_PAGE);
+  const pag = document.getElementById('ordersPagination');
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+  let html = '';
+  for (let i = 0; i < totalPages; i++) {
+    html += `<button class="page-btn ${i === ordersPage ? 'active' : ''}" onclick="goOrdersPage(${i})">${i + 1}</button>`;
+  }
+  pag.innerHTML = html;
+}
+
+function goOrdersPage(p) {
+  ordersPage = p;
+  renderOrdersPage();
+  document.getElementById('tblOrders').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleRow(id, btn) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  const open = row.classList.toggle('open');
+  btn.innerHTML = open ? '&#9650;' : '&#9660;';
+}
+
+/* ── Render Items Grid ── */
+function renderItems(itemIds, itemDetails, visits) {
+  const grid = document.getElementById('itemsGrid');
+  const empty = document.getElementById('itemsEmpty');
+  const countEl = document.getElementById('itemsCount');
+
+  countEl.textContent = '(' + itemIds.length + ')';
+
+  if (itemIds.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = itemIds.map(id => {
+    const d = itemDetails[id] || {};
+    const title = d.title || id;
+    const price = d.price || 0;
+    const qty = d.available_quantity != null ? d.available_quantity : '--';
+    const thumb = d.thumbnail ? d.thumbnail.replace('http:', 'https:') : '';
+    const v = visits[id] || 0;
+    const status = d.status || 'active';
+    const statusCls = status === 'active' ? 'badge-green' : status === 'paused' ? 'badge-yellow' : 'badge-gray';
+
+    return `<div class="item-card">
+      ${thumb ? `<img class="item-card-img" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '<div class="item-card-img" style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:24px">&#128247;</div>'}
+      <div class="item-card-body">
+        <div class="item-card-title">${esc(title)}</div>
+        <div class="item-card-price">${fmtMoney(price)}</div>
+        <div class="item-card-row">
+          <span>Estoque: ${qty}</span>
+          <span class="badge ${statusCls}">${status}</span>
+        </div>
+        <div class="item-card-row">
+          <span>Visitas: ${fmtNum(v)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── HTML escape ── */
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+/* ── Init ── */
+(function init() {
+  updateUI();
+  if (isConnected()) {
+    loadAll();
+  }
+})();
+</script>
+</body>
+</html>

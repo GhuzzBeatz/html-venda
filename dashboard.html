@@ -279,30 +279,15 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
       </div>
     </div>
 
-    <!-- Mercado Livre -->
+    <!-- Mercado Livre (link para pagina dedicada) -->
     <div class="card" style="animation-delay:.22s">
       <div class="card-header">
         Mercado Livre
-        <span id="mlStatus" class="badge badge-gray">Desconectado</span>
+        <span id="mlStatus" class="badge badge-gray">—</span>
       </div>
-      <div class="card-body">
-        <div id="mlAuth" style="text-align:center;padding:8px 0">
-          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Conecte sua conta do Mercado Livre para ver vendas, visitas e pedidos.</p>
-          <button class="btn btn-primary" onclick="connectML()">Conectar Mercado Livre</button>
-        </div>
-        <div id="mlData" class="hidden">
-          <div class="kpi-scroll" style="margin-bottom:14px">
-            <div class="kpi-card"><div class="kpi-value" id="mlVendas">0</div><div class="kpi-label">Vendas (30d)</div></div>
-            <div class="kpi-card accent-green"><div class="kpi-value" id="mlReceita">R$ 0</div><div class="kpi-label">Receita (30d)</div></div>
-            <div class="kpi-card accent-primary"><div class="kpi-value" id="mlVisitas">0</div><div class="kpi-label">Visitas (hoje)</div></div>
-            <div class="kpi-card"><div class="kpi-value" id="mlAnuncios">0</div><div class="kpi-label">Anuncios ativos</div></div>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Ultimos pedidos</div>
-          <div id="mlOrders" style="max-height:300px;overflow-y:auto"></div>
-          <div style="margin-top:10px;text-align:right">
-            <button class="btn btn-sm btn-outline" onclick="disconnectML()">Desconectar</button>
-          </div>
-        </div>
+      <div class="card-body" style="text-align:center;padding:20px 16px">
+        <p style="font-size:13px;color:var(--fg2);margin-bottom:14px">Analytics completo de vendas, receita, visitas, pedidos e anuncios.</p>
+        <a href="mercadolivre.html" class="btn btn-primary" style="display:inline-flex;text-decoration:none">Abrir Mercado Livre Analytics</a>
       </div>
     </div>
 
