@@ -66,7 +66,8 @@
 </head>
 <body>
 
-<div class="header">
+<div class="header" style="position:relative">
+  <a href="dashboard.html" style="position:absolute;right:0;top:6px;font-size:13px;color:var(--primary);font-weight:600;text-decoration:none">&#128202; Dashboard</a>
   <h1><span>GHZ</span> Plugin - HTML de Venda</h1>
   <p>Gere chaves de licenca e mensagens para enviar ao cliente.</p>
 </div>
@@ -76,9 +77,17 @@
     <div class="card">
       <div class="card-header">Selecionar App</div>
       <div class="card-body">
+        <label>Senha Administrativa</label>
+        <input type="password" id="adminPassword" placeholder="Senha admin para gerar chaves">
+        <div style="display:flex;align-items:center;gap:6px;margin-top:-8px;margin-bottom:13px">
+          <input type="checkbox" id="salvarSenha" style="width:auto;margin:0" onchange="toggleSalvarSenha()">
+          <label for="salvarSenha" style="margin:0;font-size:11px;text-transform:none;letter-spacing:0;color:var(--fg2);cursor:pointer">Salvar senha neste navegador</label>
+        </div>
         <div class="app-grid" id="appGrid"></div>
         <label>Nome do Cliente (opcional)</label>
         <input type="text" id="nomeCliente" placeholder="Ex: Joao Silva">
+        <label>Numero do Pedido ML (opcional)</label>
+        <input type="text" id="pedidoML" placeholder="Ex: 2000004567890123">
         <button class="btn btn-primary" id="btnGerar" onclick="gerarTudo()">Gerar Chave e Mensagens</button>
       </div>
     </div>
@@ -182,11 +191,41 @@ function gerarChaveLocal(app, n) {
   return `${app.prefix}-${p1}-${p2}-${p3}`;
 }
 
-async function gerarChaveSupabase(appId, cliente) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_create_license`, {
+function toggleSalvarSenha() {
+  const cb = document.getElementById('salvarSenha');
+  if (cb.checked) {
+    const pw = document.getElementById('adminPassword').value;
+    if (pw) localStorage.setItem('@GHZ:admin_token', pw);
+  } else {
+    localStorage.removeItem('@GHZ:admin_token');
+  }
+}
+
+(function initSenha() {
+  const saved = localStorage.getItem('@GHZ:admin_token');
+  if (saved) {
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('adminPassword').value = saved;
+      document.getElementById('salvarSenha').checked = true;
+    });
+    // Also try immediately in case DOM is ready
+    const el = document.getElementById('adminPassword');
+    if (el) { el.value = saved; document.getElementById('salvarSenha').checked = true; }
+  }
+})();
+
+async function gerarChaveSupabase(appId, cliente, pedidoML) {
+  const adminToken = document.getElementById('adminPassword').value.trim();
+  if (!adminToken) throw new Error('Digite a senha administrativa.');
+  if (document.getElementById('salvarSenha').checked) {
+    localStorage.setItem('@GHZ:admin_token', adminToken);
+  }
+  const body = { p_app_id: appId, p_customer_name: cliente || null, p_admin_token: adminToken };
+  if (pedidoML) body.p_ml_order_id = pedidoML;
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_admin_create_license`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
-    body: JSON.stringify({ p_app_id: appId, p_customer_name: cliente || null })
+    body: JSON.stringify(body)
   });
   if (!res.ok) throw new Error('Erro Supabase: ' + res.status);
   const data = await res.json();
@@ -198,6 +237,7 @@ async function gerarTudo() {
   if (!appAtivo) { alert('Selecione um app primeiro!'); return; }
   const btn = document.getElementById('btnGerar');
   const cliente = document.getElementById('nomeCliente').value.trim();
+  const pedidoML = document.getElementById('pedidoML').value.trim();
   const saudacao = cliente ? `Ola, ${cliente.split(' ')[0]}! ` : 'Ola! ';
   const link = downloadUrl(appAtivo);
   let chave;
@@ -206,7 +246,7 @@ async function gerarTudo() {
 
   try {
     if (appAtivo.online) {
-      chave = await gerarChaveSupabase(appAtivo.id, cliente);
+      chave = await gerarChaveSupabase(appAtivo.id, cliente, pedidoML);
     } else {
       const n = Math.floor(Math.random() * 9000) + 1000;
       chave = gerarChaveLocal(appAtivo, n);
