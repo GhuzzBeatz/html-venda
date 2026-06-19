@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -35,9 +35,13 @@
   .app-btn.ativo { border-color: var(--primary); background: var(--primary-bg) }
   .app-btn .nome { font-size: 13px; font-weight: 700; color: var(--fg) }
   .app-btn .prefix { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: monospace }
+  .app-btn .badge { display: inline-block; font-size: 9px; padding: 1px 5px; border-radius: 4px; margin-left: 6px; font-weight: 700 }
+  .app-btn .badge-online { background: rgba(34,211,160,.15); color: var(--green) }
+  .app-btn .badge-local { background: rgba(90,100,128,.2); color: var(--muted) }
   .btn { width: 100%; padding: 12px; border: none; border-radius: 9px; cursor: pointer; font-size: 14px; font-weight: 800; font-family: inherit; transition: all .15s }
   .btn-primary { background: var(--primary); color: #fff }
   .btn-primary:hover { background: var(--primary2) }
+  .btn-primary:disabled { background: var(--border2); cursor: wait }
   .btn-copy { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,211,160,.25); padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: inherit; white-space: nowrap }
   .btn-copy:hover { background: var(--green); color: #000 }
   .chave-box { background: var(--bg2); border: 2px solid var(--primary-bdr); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; text-align: center }
@@ -57,17 +61,14 @@
   .historico-item .data { font-size: 10px; color: var(--muted) }
   .historico-item .acoes { display: flex; gap: 5px; flex-shrink: 0 }
   .empty { text-align: center; color: var(--muted); padding: 24px; font-size: 12px }
-  @media (max-width: 768px) {
-    .grid { grid-template-columns: 1fr }
-    .app-grid { grid-template-columns: 1fr }
-  }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr } .app-grid { grid-template-columns: 1fr } }
 </style>
 </head>
 <body>
 
 <div class="header">
   <h1><span>GHZ</span> Plugin - HTML de Venda</h1>
-  <p>Abra, gere a chave e copie para enviar ao cliente.</p>
+  <p>Gere chaves de licenca e mensagens para enviar ao cliente.</p>
 </div>
 
 <div class="grid">
@@ -76,14 +77,9 @@
       <div class="card-header">Selecionar App</div>
       <div class="card-body">
         <div class="app-grid" id="appGrid"></div>
-
-        <label>Numero do Pedido / ID do Cliente</label>
-        <input type="number" id="numPedido" min="1" max="9999" placeholder="Ex: 1001" value="1001">
-
         <label>Nome do Cliente (opcional)</label>
         <input type="text" id="nomeCliente" placeholder="Ex: Joao Silva">
-
-        <button class="btn btn-primary" onclick="gerarTudo()">Gerar Chave e Mensagens</button>
+        <button class="btn btn-primary" id="btnGerar" onclick="gerarTudo()">Gerar Chave e Mensagens</button>
       </div>
     </div>
   </div>
@@ -96,17 +92,14 @@
           <div class="chave-valor" id="chaveGerada">-</div>
           <div class="chave-label" id="chaveLabel">selecione um app</div>
         </div>
-
         <div style="display:flex;gap:8px;margin-bottom:16px">
           <button class="btn-copy" style="flex:1" onclick="copiarTexto(document.getElementById('chaveGerada').textContent,'Chave copiada!')">Copiar Chave</button>
           <button class="btn-copy" style="flex:1" onclick="salvarHistorico()">Salvar no Historico</button>
         </div>
-
         <div class="tab-row">
           <button class="tab ativo" onclick="trocarTab('ml',this)">Mercado Livre</button>
           <button class="tab" onclick="trocarTab('wpp',this)">WhatsApp</button>
         </div>
-
         <div id="tabMl">
           <div class="msg-box">
             <div class="msg-header">
@@ -116,7 +109,6 @@
             <div class="msg-texto" id="msgML">-</div>
           </div>
         </div>
-
         <div id="tabWpp" style="display:none">
           <div class="msg-box">
             <div class="msg-header">
@@ -138,45 +130,43 @@
         <div id="historicoBox"><div class="empty">Nenhuma chave gerada ainda</div></div>
       </div>
     </div>
-
-    <div class="card" style="margin-top:16px">
-      <div class="card-header">Status do Link ZapDisparo</div>
-      <div class="card-body">
-        <div id="statusManifest" class="status-bad">Aguardando validacao do manifesto...</div>
-        <div style="margin-top:8px;font-size:12px;color:var(--fg2);word-break:break-all" id="statusManifestUrl">-</div>
-      </div>
-    </div>
   </div>
 </div>
 
 <div id="toast" style="display:none;position:fixed;bottom:20px;right:20px;background:#22d3a0;color:#000;padding:10px 18px;border-radius:9px;font-weight:700;font-size:13px;z-index:999">Copiado!</div>
 
 <script>
-const MANIFEST_URL_ZAPDISPARO = 'https://raw.githubusercontent.com/GhuzzBeatz/ZAPDISPARO/main/update-manifest.json';
+const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
 
 const APPS = [
-  { id:'medcore', nome:'MedCore', desc:'Clinica Medica', salt:'GHZ2026MEDCORE', prefix:'MEDCOR', mult:19, drive:'https://drive.google.com/file/d/1Mri3Fmyu90ABZCZuOAH5FgXzPuDXEXEI/view?usp=sharing' },
-  { id:'recoverx', nome:'RecoverX', desc:'Recuperacao de Dados', salt:'GHZ2026RECOVERX', prefix:'REXV', mult:53, drive:'https://drive.google.com/file/d/1iBKBvmHeorJo_rz0ShnBqMRyxBIfi2rT/view?usp=drivesdk' },
-  { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp', salt:'GHZ2026ZAPDISPARO', prefix:'ZAPDISP', mult:31, drive:'https://drive.google.com/file/d/1Mx1SVAx6MXfmLexG4UfP-BmsG0-uEJm4/view?usp=sharing' },
-  { id:'zapbot', nome:'ZapBot', desc:'Bot de Atendimento', salt:'GHZ2026ZAPBOT', prefix:'ZAPBOT', mult:23, drive:'https://drive.google.com/file/d/1bFWtObbifgor5lkl3aaBL-MaKYMs4zwb/view?usp=sharing' },
-  { id:'mesaup', nome:'MesaUp', desc:'Bar / Lanchonete', salt:'GHZ2026MESAUP', prefix:'MESAUP', mult:17, drive:'https://drive.google.com/file/d/1IwT6kE54uR6Hakd91mg4xfAxmoOVwqsb/view?usp=sharing' },
-  { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia', salt:'GHZ2026STFLOW', prefix:'STFLOW', mult:13, drive:'https://drive.google.com/file/d/1bxamBiuxHNIddZHAFWy8P9bD2uGQgi4c/view?usp=drivesdk' },
-  { id:'petflow', nome:'PetFlow', desc:'Pet Shop / Vet', salt:'GHZ2026PETFLOW', prefix:'PETFLOW', mult:11, drive:'' },
-  { id:'donstok', nome:'DonEstok', desc:'Estoque', salt:'GHZ2026DNSTK', prefix:'DNSTK', mult:7, drive:'' },
-  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC', salt:'GHZ2026CLEANBOOST', prefix:'CLEAN', mult:41, drive:'' },
-  { id:'pontopro', nome:'PontoPro', desc:'Controle de Ponto', salt:'GHZ2026PONTOPRO', prefix:'PONTO', mult:37, drive:'https://drive.google.com/file/d/1Kwx0s6CIm_A1T5e3kJDunQ80ExgyWEEM/view?usp=sharing' },
-  { id:'folhapro', nome:'FolhaPro', desc:'RH e Folha de Pagamento', salt:'GHZ2026FOLHAPRO', prefix:'FOLHA', mult:29, drive:'https://drive.google.com/file/d/12rNJFEb-RTA7oNL-Bn9PTkW9sk9SMbBU/view?usp=sharing' },
-  { id:'irpro', nome:'IRPro', desc:'Organizador de IR', salt:'GHZ2026IRPRO', prefix:'IRPRO', mult:43, drive:'https://drive.google.com/file/d/1TttDK_8kWkeK5ta1-hhcOejNG20OLfyf/view?usp=sharing' }
+  { id:'mesaup',     nome:'MesaUp',     desc:'Bar / Lanchonete',      prefix:'MESAUP',  online:true,  repo:'GhuzzBeatz/mesaup',     setup:'MesaUp.Setup.exe' },
+  { id:'nexhotel',   nome:'NexHotel',   desc:'Hotelaria',             prefix:'NEXHTL',  online:true,  repo:'GhuzzBeatz/NexHotel',   setup:'NexHotel.Setup.exe' },
+  { id:'petflow',    nome:'PetFlow',    desc:'Pet Shop / Vet',        prefix:'PETFLW',  online:true,  repo:'GhuzzBeatz/petflow',    setup:'PetFlow.Setup.exe' },
+  { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia',     prefix:'STFLOW',  online:true,  repo:'GhuzzBeatz/studioflow', setup:'StudioFlow.Setup.exe' },
+  { id:'imobcore',   nome:'ImobCore',   desc:'Sistema Imobiliario',   prefix:'IMOBC',   online:true,  repo:'GhuzzBeatz/ImobCore',   setup:'ImobCore.Setup.exe' },
+  { id:'medcore',    nome:'MedCore',    desc:'Clinica Medica',        prefix:'MEDCOR',  online:true,  repo:'GhuzzBeatz/MEDCORE',    setup:'MedCore.Setup.exe' },
+  { id:'folhapro',   nome:'FolhaPro',   desc:'RH e Folha',           prefix:'FOLHA',   online:true,  repo:'GhuzzBeatz/GhuzzBeatz-FOLHAPRO', setup:'FolhaPro.Setup.exe' },
+  { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDISP', online:false, repo:'GhuzzBeatz/ZAPDISPARO', setup:'ZapDisparo.Setup.exe', salt:'GHZ2026ZAPDISPARO', mult:31 },
+  { id:'zapbot',     nome:'ZapBot',    desc:'Bot de Atendimento',     prefix:'ZAPBOT',  online:false, repo:'GhuzzBeatz/ZAPBOT',     setup:'ZapBot.Setup.exe', salt:'GHZ2026ZAPBOT', mult:23 },
+  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC',         prefix:'CLEAN',   online:false, repo:'GhuzzBeatz/cleanboost', setup:'CleanBoost.Setup.exe', salt:'GHZ2026CLEANBOOST', mult:41 },
+  { id:'pontopro',   nome:'PontoPro',  desc:'Controle de Ponto',      prefix:'PONTO',   online:false, repo:'GhuzzBeatz/pontopro',   setup:'PontoPro.Setup.exe', salt:'GHZ2026PONTOPRO', mult:37 },
+  { id:'irpro',      nome:'IRPro',     desc:'Organizador de IR',      prefix:'IRPRO',   online:false, repo:'GhuzzBeatz/irpro',      setup:'IRPro.Setup.exe', salt:'GHZ2026IRPRO', mult:43 },
+  { id:'recoverx',   nome:'RecoverX',  desc:'Recuperacao de Dados',   prefix:'RECVX',   online:false, repo:'GhuzzBeatz/recoverx',   setup:'RecoverX.Setup.exe', salt:'GHZ2026RECOVERX', mult:53 },
+  { id:'cpfcheck',   nome:'CPFCheck',  desc:'Verificador de CPF',     prefix:'CPFCK',   online:false, repo:'GhuzzBeatz/CPFCheck',   setup:'CPFCheck.Setup.exe', salt:'GHZ2026CPFCHECK', mult:41 }
 ];
 
 let appAtivo = null;
-let manifestStatus = { ok:false, version:'', url:'' };
+
+function downloadUrl(app) {
+  return `https://github.com/${app.repo}/releases/latest/download/${app.setup}`;
+}
 
 function renderApps() {
   document.getElementById('appGrid').innerHTML = APPS.map(a => `
     <button class="app-btn ${appAtivo && appAtivo.id === a.id ? 'ativo' : ''}" onclick="selecionarApp('${a.id}')">
-      <div class="nome">${a.nome}</div>
-      <div class="prefix">${a.prefix}-XXXX-XXXX-XXXX</div>
+      <div class="nome">${a.nome} <span class="badge ${a.online ? 'badge-online' : 'badge-local'}">${a.online ? 'Supabase' : 'Local'}</span></div>
+      <div class="prefix">${a.prefix}-XXXX-XXXX-XXXX-XXXX</div>
     </button>`).join('');
 }
 
@@ -185,32 +175,61 @@ function selecionarApp(id) {
   renderApps();
 }
 
-function gerarChave(app, n) {
+function gerarChaveLocal(app, n) {
   const p1 = String(n).padStart(4, '0');
   const p2 = btoa(n + app.salt).replace(/[^A-Z0-9]/gi, '').slice(0, 4).toUpperCase();
   const p3 = String((n * app.mult) % 9999).padStart(4, '0');
   return `${app.prefix}-${p1}-${p2}-${p3}`;
 }
 
-function gerarTudo() {
-  if (!appAtivo) { alert('Selecione um app primeiro!'); return; }
-  const n = parseInt(document.getElementById('numPedido').value, 10);
-  if (!n || n < 1 || n > 9999) { alert('Numero invalido (1 a 9999)'); return; }
+async function gerarChaveSupabase(appId, cliente) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_create_license`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify({ p_app_id: appId, p_customer_name: cliente || null })
+  });
+  if (!res.ok) throw new Error('Erro Supabase: ' + res.status);
+  const data = await res.json();
+  if (!data?.ok) throw new Error(data?.message || 'Erro ao criar licença');
+  return data.license_key;
+}
 
-  const chave = gerarChave(appAtivo, n);
+async function gerarTudo() {
+  if (!appAtivo) { alert('Selecione um app primeiro!'); return; }
+  const btn = document.getElementById('btnGerar');
   const cliente = document.getElementById('nomeCliente').value.trim();
   const saudacao = cliente ? `Ola, ${cliente.split(' ')[0]}! ` : 'Ola! ';
-  const drive = (appAtivo.drive || '[link do download]');
+  const link = downloadUrl(appAtivo);
+  let chave;
+
+  btn.disabled = true; btn.textContent = 'Gerando...';
+
+  try {
+    if (appAtivo.online) {
+      chave = await gerarChaveSupabase(appAtivo.id, cliente);
+    } else {
+      const n = Math.floor(Math.random() * 9000) + 1000;
+      chave = gerarChaveLocal(appAtivo, n);
+    }
+  } catch (e) {
+    alert('Erro ao gerar chave: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Gerar Chave e Mensagens';
+    return;
+  }
+
+  btn.disabled = false; btn.textContent = 'Gerar Chave e Mensagens';
 
   document.getElementById('chaveGerada').textContent = chave;
-  document.getElementById('chaveLabel').textContent = `${appAtivo.nome} - Pedido #${n}`;
+  document.getElementById('chaveLabel').textContent = `${appAtivo.nome}${cliente ? ' - ' + cliente : ''}`;
   document.getElementById('resultCard').style.display = 'block';
 
-  const msgML = `${saudacao}Segue sua chave de ativacao do ${appAtivo.nome}:\n\nChave: ${chave}\n\nDownload: ${drive}\n\nInstale e ative com a chave acima. Qualquer duvida, e so chamar!`;
+  const msgML = `${saudacao}Segue sua chave do ${appAtivo.nome}:\n\nChave: ${chave}\n\nDownload: ${link}\n\nInstale e ative com a chave acima. Qualquer duvida, e so chamar!`;
   document.getElementById('msgML').textContent = msgML;
-  document.getElementById('mlTitulo').textContent = `Mensagem Mercado Livre (${msgML.replace(/\n/g,' ').length}/350)`;
+  const charCount = msgML.replace(/\n/g,' ').length;
+  document.getElementById('mlTitulo').textContent = `Mensagem ML (${charCount}/350)`;
+  document.getElementById('mlTitulo').style.color = charCount > 350 ? 'var(--red)' : '';
 
-  const msgWPP = `${saudacao}Obrigado pela compra do *${appAtivo.nome}*!\n\nSua chave de ativacao:\n${chave}\n\nComo ativar:\n1. Baixe o app: ${drive}\n2. Instale normalmente\n3. Abra o app e insira a chave acima\n\nPronto!\n\nQualquer duvida estou a disposicao.\n- GHZ Plugin`;
+  const msgWPP = `${saudacao}Obrigado pela compra do *${appAtivo.nome}*!\n\nSua chave de ativacao:\n${chave}\n\nComo ativar:\n1. Baixe: ${link}\n2. Instale normalmente\n3. Abra e insira a chave\n\nPronto! Qualquer duvida estou a disposicao.\n- GHZ Plugin`;
   document.getElementById('msgWPP').textContent = msgWPP;
 }
 
@@ -234,18 +253,9 @@ function salvarHistorico() {
   if (!appAtivo) return;
   const chave = document.getElementById('chaveGerada').textContent;
   if (chave === '-' || !chave) return;
-  const n = document.getElementById('numPedido').value;
   const cliente = document.getElementById('nomeCliente').value.trim();
   const hist = JSON.parse(localStorage.getItem('ghz_historico') || '[]');
-  hist.unshift({
-    id: Date.now(),
-    appId: appAtivo.id,
-    appNome: appAtivo.nome,
-    chave,
-    pedido: n,
-    cliente,
-    data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
-  });
+  hist.unshift({ id: Date.now(), appId: appAtivo.id, appNome: appAtivo.nome, chave, cliente, data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
   if (hist.length > 200) hist.pop();
   localStorage.setItem('ghz_historico', JSON.stringify(hist));
   renderHistorico();
@@ -255,31 +265,18 @@ function salvarHistorico() {
 function renderHistorico() {
   const hist = JSON.parse(localStorage.getItem('ghz_historico') || '[]');
   const box = document.getElementById('historicoBox');
-  if (!hist.length) {
-    box.innerHTML = '<div class="empty">Nenhuma chave gerada ainda</div>';
-    return;
-  }
+  if (!hist.length) { box.innerHTML = '<div class="empty">Nenhuma chave gerada ainda</div>'; return; }
   box.innerHTML = hist.slice(0, 50).map(h => `
     <div class="historico-item">
       <div class="info">
         <div class="app-nome">${h.appNome}${h.cliente ? ' - ' + h.cliente : ''}</div>
         <div class="chave-mini">${h.chave}</div>
-        <div class="data">${h.data} - Pedido #${h.pedido}</div>
+        <div class="data">${h.data}</div>
       </div>
       <div class="acoes">
         <button class="btn-copy" onclick="copiarTexto('${h.chave}','Chave copiada!')">Copiar</button>
-        <button class="btn-copy" onclick="recarregar('${h.appId}','${h.pedido}','${(h.cliente || '').replace(/'/g, "\\'")}')">Usar</button>
       </div>
-    </div>
-  `).join('');
-}
-
-function recarregar(appId, pedido, cliente) {
-  selecionarApp(appId);
-  document.getElementById('numPedido').value = pedido;
-  document.getElementById('nomeCliente').value = cliente;
-  gerarTudo();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+    </div>`).join('');
 }
 
 function limparHistorico() {
@@ -288,35 +285,9 @@ function limparHistorico() {
   renderHistorico();
 }
 
-async function atualizarLinkZapDisparoPorManifesto() {
-  const statusEl = document.getElementById('statusManifest');
-  const urlEl = document.getElementById('statusManifestUrl');
-  try {
-    const res = await fetch(MANIFEST_URL_ZAPDISPARO, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const manifest = await res.json();
-    if (!manifest || typeof manifest.download_url !== 'string' || !manifest.download_url.trim()) {
-      throw new Error('Manifesto sem download_url');
-    }
-    const appZap = APPS.find(a => a.id === 'zapdisparo');
-    if (appZap) appZap.drive = manifest.download_url.trim();
-    manifestStatus = { ok:true, version:String(manifest.version || ''), url: appZap ? appZap.drive : '' };
-    statusEl.className = 'status-ok';
-    statusEl.textContent = `OK: link ZapDisparo atualizado pelo manifesto (v${manifestStatus.version || 'n/a'})`;
-    urlEl.textContent = manifestStatus.url;
-  } catch (err) {
-    manifestStatus = { ok:false, version:'', url:'' };
-    statusEl.className = 'status-bad';
-    statusEl.textContent = 'Falha ao atualizar link pelo manifesto. Usando fallback configurado no app.';
-    urlEl.textContent = MANIFEST_URL_ZAPDISPARO;
-    console.warn(err);
-  }
-}
-
 renderApps();
 renderHistorico();
-selecionarApp('zapdisparo');
-atualizarLinkZapDisparoPorManifesto();
+selecionarApp('mesaup');
 </script>
 </body>
 </html>
