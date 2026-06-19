@@ -279,6 +279,33 @@ a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
       </div>
     </div>
 
+    <!-- Mercado Livre -->
+    <div class="card" style="animation-delay:.22s">
+      <div class="card-header">
+        Mercado Livre
+        <span id="mlStatus" class="badge badge-gray">Desconectado</span>
+      </div>
+      <div class="card-body">
+        <div id="mlAuth" style="text-align:center;padding:8px 0">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Conecte sua conta do Mercado Livre para ver vendas, visitas e pedidos.</p>
+          <button class="btn btn-primary" onclick="connectML()">Conectar Mercado Livre</button>
+        </div>
+        <div id="mlData" class="hidden">
+          <div class="kpi-scroll" style="margin-bottom:14px">
+            <div class="kpi-card"><div class="kpi-value" id="mlVendas">0</div><div class="kpi-label">Vendas (30d)</div></div>
+            <div class="kpi-card accent-green"><div class="kpi-value" id="mlReceita">R$ 0</div><div class="kpi-label">Receita (30d)</div></div>
+            <div class="kpi-card accent-primary"><div class="kpi-value" id="mlVisitas">0</div><div class="kpi-label">Visitas (hoje)</div></div>
+            <div class="kpi-card"><div class="kpi-value" id="mlAnuncios">0</div><div class="kpi-label">Anuncios ativos</div></div>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Ultimos pedidos</div>
+          <div id="mlOrders" style="max-height:300px;overflow-y:auto"></div>
+          <div style="margin-top:10px;text-align:right">
+            <button class="btn btn-sm btn-outline" onclick="disconnectML()">Desconectar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Ultimos Eventos -->
     <div class="card" style="animation-delay:.25s">
       <div class="card-header">Ultimos Eventos</div>
@@ -405,6 +432,7 @@ async function loadData() {
     showSpinner(false);
   }
   loadGitHub();
+  loadML();
 }
 
 // ── Render Dashboard ──
@@ -658,6 +686,110 @@ function getGhCache() {
 }
 function setGhCache(data) {
   localStorage.setItem(GH_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+}
+
+// ── Mercado Livre ──
+const ML_CLIENT_ID = '6722973352512823';
+const ML_CLIENT_SECRET = '48fyKTtKwNKDeCS7PHAz7YU2OxEfw7ln';
+const ML_REDIRECT = 'https://ghuzzbeatz.github.io/html-venda/callback.html';
+const ML_LS = '@GHZ:ml_token';
+
+function getMLToken() {
+  try { return JSON.parse(localStorage.getItem(ML_LS)) } catch { return null }
+}
+
+function connectML() {
+  const url = `https://auth.mercadolivre.com.br/authorization?response_type=code&client_id=${ML_CLIENT_ID}&redirect_uri=${encodeURIComponent(ML_REDIRECT)}`;
+  window.location.href = url;
+}
+
+function disconnectML() {
+  localStorage.removeItem(ML_LS);
+  document.getElementById('mlAuth').classList.remove('hidden');
+  document.getElementById('mlData').classList.add('hidden');
+  document.getElementById('mlStatus').textContent = 'Desconectado';
+  document.getElementById('mlStatus').className = 'badge badge-gray';
+}
+
+async function refreshMLToken(tk) {
+  try {
+    const res = await fetch('https://api.mercadolibre.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type: 'refresh_token', client_id: ML_CLIENT_ID, client_secret: ML_CLIENT_SECRET, refresh_token: tk.refresh_token })
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    const newTk = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: Date.now() + (d.expires_in || 21600) * 1000, user_id: d.user_id || tk.user_id };
+    localStorage.setItem(ML_LS, JSON.stringify(newTk));
+    return newTk;
+  } catch { return null }
+}
+
+async function mlApi(path, tk) {
+  const res = await fetch(`https://api.mercadolibre.com${path}`, {
+    headers: { Authorization: `Bearer ${tk.access_token}` }
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+async function loadML() {
+  let tk = getMLToken();
+  if (!tk) return;
+  if (tk.expires_at && Date.now() > tk.expires_at) {
+    tk = await refreshMLToken(tk);
+    if (!tk) { disconnectML(); return; }
+  }
+  document.getElementById('mlAuth').classList.add('hidden');
+  document.getElementById('mlData').classList.remove('hidden');
+  document.getElementById('mlStatus').textContent = 'Conectado';
+  document.getElementById('mlStatus').className = 'badge badge-green';
+
+  try {
+    const uid = tk.user_id;
+    const now = new Date();
+    const d30 = new Date(now - 30 * 86400000).toISOString();
+
+    const [orders, items] = await Promise.all([
+      mlApi(`/orders/search?seller=${uid}&order.date_created.from=${d30}&sort=date_desc&limit=20`, tk),
+      mlApi(`/users/${uid}/items/search?status=active&limit=50`, tk)
+    ]);
+
+    let vendas = 0, receita = 0;
+    const orderList = orders?.results || [];
+    orderList.forEach(o => { if (o.status === 'paid') { vendas++; receita += o.total_amount || 0; } });
+
+    document.getElementById('mlVendas').textContent = fmt(vendas);
+    document.getElementById('mlReceita').textContent = 'R$ ' + receita.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    document.getElementById('mlAnuncios').textContent = fmt(items?.paging?.total || 0);
+
+    let visitas = 0;
+    if (items?.results?.length) {
+      const ids = items.results.slice(0, 10).join(',');
+      const vis = await mlApi(`/items/visits?ids=${ids}`, tk).catch(() => null);
+      if (vis) Object.values(vis).forEach(v => { if (typeof v === 'number') visitas += v; });
+    }
+    document.getElementById('mlVisitas').textContent = fmt(visitas);
+
+    document.getElementById('mlOrders').innerHTML = orderList.length
+      ? orderList.slice(0, 15).map(o => {
+          const dt = new Date(o.date_created);
+          const statusMap = { paid: 'badge-green', cancelled: 'badge-red', pending: 'badge-yellow' };
+          const statusLabel = { paid: 'Pago', cancelled: 'Cancelado', pending: 'Pendente' };
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">#${o.id}</div>
+              <div style="color:var(--muted);font-size:10px">${dt.toLocaleDateString('pt-BR')} ${dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+            <div style="font-weight:800;color:var(--green);white-space:nowrap">R$ ${(o.total_amount||0).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+            <span class="badge ${statusMap[o.status]||'badge-gray'}">${statusLabel[o.status]||o.status}</span>
+          </div>`;
+        }).join('')
+      : '<p style="color:var(--muted);font-size:12px;text-align:center;padding:16px 0">Nenhum pedido nos ultimos 30 dias.</p>';
+  } catch (e) {
+    document.getElementById('mlOrders').innerHTML = `<p style="color:var(--red);font-size:12px">Erro: ${esc(e.message)}</p>`;
+  }
 }
 
 function renderGitHub(repos) {

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GHZ — Autorizando Mercado Livre...</title>
+<style>
+  body{background:#0f1117;color:#e8eaf0;font-family:"Segoe UI",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}
+  .card{background:#1c2233;border:1px solid #2a3350;border-radius:14px;padding:32px;max-width:400px}
+  h2{font-size:18px;margin-bottom:8px}
+  p{font-size:13px;color:#a0a8c0;line-height:1.6}
+  .ok{color:#22d3a0}
+  .err{color:#f05252}
+  .spinner{width:32px;height:32px;border:3px solid #2a3350;border-top-color:#4f8ef7;border-radius:50%;animation:spin .7s linear infinite;margin:16px auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner" id="spinner"></div>
+  <h2 id="title">Autorizando...</h2>
+  <p id="msg">Conectando ao Mercado Livre.</p>
+</div>
+<script>
+const ML_CLIENT_ID = '6722973352512823';
+const ML_CLIENT_SECRET = '48fyKTtKwNKDeCS7PHAz7YU2OxEfw7ln';
+const REDIRECT_URI = 'https://ghuzzbeatz.github.io/html-venda/callback.html';
+const LS_TOKEN = '@GHZ:ml_token';
+
+(async function () {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  if (!code) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent = 'Erro';
+    document.getElementById('title').className = 'err';
+    document.getElementById('msg').textContent = 'Codigo de autorizacao nao encontrado. Tente novamente pelo Dashboard.';
+    return;
+  }
+
+  try {
+    const res = await fetch('https://api.mercadolibre.com/oauth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: ML_CLIENT_ID,
+        client_secret: ML_CLIENT_SECRET,
+        code: code,
+        redirect_uri: REDIRECT_URI
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || err.error || 'HTTP ' + res.status);
+    }
+
+    const data = await res.json();
+    localStorage.setItem(LS_TOKEN, JSON.stringify({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at: Date.now() + (data.expires_in || 21600) * 1000,
+      user_id: data.user_id
+    }));
+
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent = 'Conectado!';
+    document.getElementById('title').className = 'ok';
+    document.getElementById('msg').textContent = 'Mercado Livre autorizado. Redirecionando ao Dashboard...';
+
+    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+  } catch (e) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent = 'Erro na autorizacao';
+    document.getElementById('title').className = 'err';
+    document.getElementById('msg').textContent = e.message;
+  }
+})();
+</script>
+</body>
+</html>
