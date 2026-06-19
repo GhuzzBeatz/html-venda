@@ -692,6 +692,17 @@ function renderKPIs(orders, activeItemIds, visits) {
   const totalVisits = Object.values(visits).reduce((s, v) => s + v, 0);
   const conversao = totalVisits > 0 ? (totalVendas / totalVisits * 100) : 0;
 
+  // Melhor dia
+  const dailyRevenue = {};
+  paid.forEach(o => {
+    const d = new Date(o.date_created).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+    dailyRevenue[d] = (dailyRevenue[d] || 0) + (o.total_amount || 0);
+  });
+  let bestDay = '—', bestDayVal = 0;
+  for (const [d, v] of Object.entries(dailyRevenue)) {
+    if (v > bestDayVal) { bestDay = d; bestDayVal = v; }
+  }
+
   const container = document.getElementById('kpiRow');
   container.innerHTML = `
     <div class="kpi-card">
@@ -706,6 +717,11 @@ function renderKPIs(orders, activeItemIds, visits) {
     <div class="kpi-card accent-primary">
       <div class="kpi-value">${fmtMoney(ticket)}</div>
       <div class="kpi-label">Ticket Medio</div>
+    </div>
+    <div class="kpi-card" style="border:1px solid var(--green)">
+      <div class="kpi-value" style="color:var(--green)">${fmtMoney(bestDayVal)}</div>
+      <div class="kpi-label">Melhor Dia</div>
+      <div class="kpi-sub">${bestDay}</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-value">${fmtNum(anuncios)}</div>
