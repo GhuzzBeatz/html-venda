@@ -8,10 +8,12 @@
 :root{--bg:#0f1117;--card:#1c2233;--border:#2a3350;--primary:#4f8ef7;--green:#22d3a0;--fg:#e8eaf0;--muted:#5a6480}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:20px}
-.container{max-width:1000px;margin:0 auto}
+.container{max-width:900px;margin:0 auto}
 h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}h1 span{color:var(--primary)}
 .sub{text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px}
 .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
+.controls label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.controls input[type="file"]{background:#161b27;border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--fg);font-size:12px}
 .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;min-height:42px}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-green{background:var(--green);color:#000}
@@ -19,101 +21,70 @@ h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}h1 span{co
 .preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .preview-header{padding:8px 14px;font-size:11px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 
-/* ── Spectra Piano Mockup (replica do C++) ── */
-.sp{position:relative;width:800px;height:500px;overflow:hidden;font-family:"Segoe UI",system-ui,sans-serif}
-.sp-bg{position:absolute;inset:0;background:linear-gradient(135deg,#33241c 0%,#1b1512 45%,#15110f 100%)}
-.sp-lines{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 16px,rgba(213,169,79,.04) 16px,rgba(213,169,79,.04) 18px)}
-.sp-header{position:relative;padding:14px 24px;display:flex;justify-content:space-between;align-items:flex-start}
-.sp-title{font-size:26px;font-weight:900;color:#eee6d4;letter-spacing:1px}
-.sp-subtitle{font-size:10px;font-weight:700;color:#d5a94f;margin-top:2px}
-.sp-version{font-size:9px;color:#a69882;text-align:right}
-.sp-logo{width:44px;height:44px;border-radius:50%;overflow:hidden;border:1px solid #4a392a;flex-shrink:0}
-.sp-logo img{width:100%;height:100%;object-fit:cover}
-.sp-panels{position:relative;display:flex;gap:8px;padding:0 18px;height:160px}
-.sp-panel{background:rgba(33,26,22,.95);border:1px solid rgba(74,57,42,.82);border-radius:10px;padding:10px 12px;flex:1;position:relative}
-.sp-panel-title{font-size:9px;font-weight:700;color:rgba(238,234,212,.82);margin-left:22px;margin-bottom:8px}
-.sp-panel-bar{position:absolute;top:12px;left:12px;width:16px;height:2px;background:#d5a94f;border-radius:1px}
-.sp-knobs{display:flex;justify-content:space-around;align-items:center;height:100%;padding-top:6px}
-.sp-knob{text-align:center;width:60px}
-.sp-knob-circle{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#302620,#0e0c0b);border:1px solid #4a392a;margin:0 auto 4px;position:relative}
-.sp-knob-arc{position:absolute;inset:4px;border-radius:50%;border:3px solid transparent;border-bottom-color:#d5a94f;border-right-color:#a95e36;transform:rotate(-30deg)}
-.sp-knob-dot{position:absolute;width:3px;height:10px;background:#eee6d4;border-radius:2px;top:6px;left:50%;margin-left:-1.5px;transform-origin:center 22px}
-.sp-knob-label{font-size:7px;font-weight:700;color:#a69882;text-transform:uppercase}
-.sp-knob-value{font-size:8px;color:#eee6d4;margin-top:2px;background:rgba(0,0,0,.3);border-radius:3px;padding:1px 4px;display:inline-block}
-.sp-lower{display:flex;gap:8px;padding:8px 18px;height:160px}
-.sp-combo{background:#15110f;border:1px solid #4a392a;border-radius:6px;padding:8px 10px;font-size:10px;color:#eee6d4;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.sp-combo-dot{width:5px;height:5px;border-radius:50%;background:#d5a94f}
-.sp-combo-label{font-size:7px;font-weight:700;color:#a69882;text-transform:uppercase;margin-bottom:3px}
-.sp-keyboard{position:relative;margin:6px 18px;height:68px;background:#15110f;border-radius:6px;border:1px solid #4a392a;display:flex;overflow:hidden;padding:4px}
-.sp-key-white{flex:1;background:#eee6d4;border-radius:0 0 3px 3px;margin:0 1px;position:relative}
-.sp-key-black{position:absolute;width:2.2%;height:55%;background:#171311;border-radius:0 0 2px 2px;z-index:2}
+/* ── Mockup base 800x800 ── */
+.mockup{width:800px;height:800px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
-/* ── Mockup Templates ── */
-.mockup{width:800px;height:800px;position:relative;overflow:hidden}
-.tpl-hero{background:linear-gradient(135deg,#1a1014 0%,#2a1a10 50%,#0f1117 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px}
-.tpl-hero .sp-wrap{transform:scale(.92);margin-bottom:16px;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-.tpl-hero .hero-title{font-size:42px;font-weight:900;color:#eee6d4;letter-spacing:3px}
-.tpl-hero .hero-sub{font-size:16px;color:#d5a94f;font-weight:700;margin-top:4px}
-.tpl-hero .badge-row{display:flex;gap:10px;margin-top:16px}
+/* Hero */
+.tpl-hero{background:linear-gradient(135deg,#1a1014 0%,#2a1a10 50%,#0f1117 100%)}
+.tpl-hero .screenshot-wrap{border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6);margin-bottom:20px}
+.tpl-hero .screenshot-wrap img{display:block;width:680px;height:auto}
+.tpl-hero .screenshot-placeholder{width:680px;height:420px;background:#15110f;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#4a392a;font-size:14px;box-shadow:0 20px 60px rgba(0,0,0,.6);margin-bottom:20px}
+.tpl-hero .hero-title{font-size:40px;font-weight:900;color:#eee6d4;letter-spacing:3px;text-align:center}
+.tpl-hero .hero-sub{font-size:15px;color:#d5a94f;font-weight:700;margin-top:4px;text-align:center}
+.tpl-hero .badge-row{display:flex;gap:10px;margin-top:16px;justify-content:center}
 .tpl-hero .badge{background:rgba(213,169,79,.12);border:1px solid rgba(213,169,79,.25);color:#d5a94f;padding:5px 14px;border-radius:16px;font-size:12px;font-weight:700}
 
-.tpl-features{background:linear-gradient(180deg,#15110f,#0f1117);padding:40px;display:flex;flex-direction:column;align-items:center}
-.tpl-features .ft-title{font-size:32px;font-weight:900;color:#eee6d4;margin-bottom:24px}
-.tpl-features .ft-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%}
-.tpl-features .ft-card{background:rgba(255,255,255,.03);border:1px solid rgba(213,169,79,.15);border-radius:12px;padding:24px;text-align:center}
-.tpl-features .ft-icon{font-size:36px;margin-bottom:8px}
-.tpl-features .ft-name{font-size:15px;font-weight:800;color:#eee6d4}
-.tpl-features .ft-desc{font-size:11px;color:#a69882;margin-top:4px}
+/* Features */
+.tpl-features{background:linear-gradient(180deg,#15110f,#0f1117);padding:40px}
+.tpl-features .ft-title{font-size:30px;font-weight:900;color:#eee6d4;margin-bottom:20px;text-align:center}
+.tpl-features .ft-sub{font-size:13px;color:#d5a94f;margin-bottom:24px;text-align:center}
+.tpl-features .ft-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:680px;margin:0 auto}
+.tpl-features .ft-card{background:rgba(255,255,255,.03);border:1px solid rgba(213,169,79,.15);border-radius:12px;padding:20px;text-align:center}
+.tpl-features .ft-icon{font-size:32px;margin-bottom:6px}
+.tpl-features .ft-name{font-size:14px;font-weight:800;color:#eee6d4}
+.tpl-features .ft-desc{font-size:10px;color:#a69882;margin-top:4px}
 
-.tpl-compat{background:linear-gradient(135deg,#0f1117,#1a1418);padding:40px;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.tpl-compat .ct-title{font-size:28px;font-weight:900;color:#eee6d4;margin-bottom:8px}
-.tpl-compat .ct-sub{font-size:13px;color:#a69882;margin-bottom:24px}
-.tpl-compat .ct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.tpl-compat .ct-card{background:rgba(255,255,255,.04);border:1px solid rgba(213,169,79,.12);border-radius:10px;padding:18px;text-align:center;font-size:13px;font-weight:700;color:#eee6d4}
-.tpl-compat .ct-card span{display:block;font-size:26px;margin-bottom:4px}
+/* Compat */
+.tpl-compat{background:linear-gradient(135deg,#0f1117,#1a1418);padding:40px}
+.tpl-compat .ct-title{font-size:28px;font-weight:900;color:#eee6d4;margin-bottom:6px;text-align:center}
+.tpl-compat .ct-sub{font-size:13px;color:#a69882;margin-bottom:20px;text-align:center}
+.tpl-compat .ct-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:600px;margin:0 auto}
+.tpl-compat .ct-card{background:rgba(255,255,255,.04);border:1px solid rgba(213,169,79,.12);border-radius:10px;padding:16px;text-align:center;font-size:13px;font-weight:700;color:#eee6d4}
+.tpl-compat .ct-card span{display:block;font-size:24px;margin-bottom:4px}
+.tpl-compat .ct-footer{margin-top:24px;text-align:center;font-size:13px;color:#eee6d4;font-weight:700}
+.tpl-compat .ct-footer-sub{font-size:11px;color:#a69882;margin-top:4px}
 </style>
 </head>
 <body>
 <div class="container">
 <h1><span>GHZ</span> Plugin — Imagens para Mercado Livre</h1>
-<p class="sub">Imagens 800x800 prontas para anuncio. Clique "Baixar PNG" em cada uma.</p>
+<p class="sub">Imagens 800x800 prontas para anuncio. Sem URLs (permitido pelo ML).</p>
 
 <div class="controls">
+  <div>
+    <label>Screenshot do App (arraste ou selecione)</label>
+    <input type="file" id="screenshotFile" accept="image/*" onchange="loadScreenshot(this)">
+  </div>
   <button class="btn btn-primary" onclick="downloadAll()">Baixar Todas (3 PNGs)</button>
-  <a href="index.html" class="btn" style="background:var(--card);color:var(--fg);border:1px solid var(--border);text-decoration:none;display:inline-flex;align-items:center">Voltar ao Gerador</a>
+  <a href="index.html" class="btn" style="background:var(--card);color:var(--fg);border:1px solid var(--border);text-decoration:none;display:inline-flex;align-items:center">Gerador</a>
 </div>
 
 <div class="preview-wrap">
 
-<!-- IMAGEM 1: Hero com Plugin -->
+<!-- IMAGEM 1: Hero com Screenshot -->
 <div class="preview-card">
-  <div class="preview-header"><span>Imagem 1 — Hero com Plugin (800x800)</span><button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="dl('mockup1','spectra-piano-hero')">Baixar PNG</button></div>
+  <div class="preview-header"><span>Imagem 1 — Hero (800x800)</span><button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="dl('mockup1','spectra-piano-hero')">Baixar PNG</button></div>
   <div class="mockup tpl-hero" id="mockup1">
-    <div class="sp-wrap">
-      <div class="sp">
-        <div class="sp-bg"></div><div class="sp-lines"></div>
-        <div class="sp-header">
-          <div><div class="sp-title">SPECTRA</div><div class="sp-subtitle">HYBRID PIANO</div></div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div class="sp-version">GHZ PLUGIN / v1.2<br>www.ghzplugin.com.br</div>
-            <div class="sp-logo"><img src="https://raw.githubusercontent.com/GhuzzBeatz/spectra-piano/master/Assets/Brand/ghz-plugin-logo.png" onerror="this.parentElement.innerHTML='🎹'"></div>
-          </div>
-        </div>
-        <div class="sp-panels">
-          <div class="sp-panel" style="flex:.8"><div class="sp-panel-bar"></div><div class="sp-panel-title">PIANO</div>
-            <div style="padding:8px 4px"><div class="sp-combo-label">CATEGORY</div><div class="sp-combo">PIANO MODELS<div class="sp-combo-dot"></div></div><div class="sp-combo-label">SOUND</div><div class="sp-combo">CONCERT GRAND<div class="sp-combo-dot"></div></div></div>
-          </div>
-          <div class="sp-panel" style="flex:1.5"><div class="sp-panel-bar"></div><div class="sp-panel-title">CHARACTER</div>
-            <div class="sp-knobs"><div class="sp-knob"><div class="sp-knob-circle"><div class="sp-knob-arc"></div><div class="sp-knob-dot" style="transform:rotate(-50deg)"></div></div><div class="sp-knob-label">TONE</div><div class="sp-knob-value">65%</div></div><div class="sp-knob"><div class="sp-knob-circle"><div class="sp-knob-arc"></div><div class="sp-knob-dot" style="transform:rotate(-20deg)"></div></div><div class="sp-knob-label">DYNAMICS</div><div class="sp-knob-value">75%</div></div><div class="sp-knob"><div class="sp-knob-circle"><div class="sp-knob-arc"></div><div class="sp-knob-dot" style="transform:rotate(-70deg)"></div></div><div class="sp-knob-label">HAMMER</div><div class="sp-knob-value">50%</div></div><div class="sp-knob"><div class="sp-knob-circle"><div class="sp-knob-arc"></div><div class="sp-knob-dot" style="transform:rotate(-30deg)"></div></div><div class="sp-knob-label">BODY</div><div class="sp-knob-value">70%</div></div></div>
-          </div>
-        </div>
-        <div class="sp-keyboard" id="pianoKeys"></div>
-      </div>
+    <div id="screenshotArea">
+      <div class="screenshot-placeholder" id="placeholder">Carregue o screenshot acima</div>
     </div>
     <div class="hero-title">SPECTRA PIANO</div>
     <div class="hero-sub">Plugin VST3 — Piano Hibrido Modelado</div>
     <div class="badge-row">
-      <div class="badge">VST3</div><div class="badge">Windows</div><div class="badge">Standalone</div><div class="badge">54+ Sons</div>
+      <div class="badge">VST3</div>
+      <div class="badge">Windows</div>
+      <div class="badge">Standalone</div>
+      <div class="badge">54+ Sons</div>
     </div>
   </div>
 </div>
@@ -123,15 +94,15 @@ h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}h1 span{co
   <div class="preview-header"><span>Imagem 2 — Funcionalidades (800x800)</span><button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="dl('mockup2','spectra-piano-features')">Baixar PNG</button></div>
   <div class="mockup tpl-features" id="mockup2">
     <div class="ft-title">SPECTRA PIANO</div>
+    <div class="ft-sub">Plugin VST3 — Piano Hibrido Modelado</div>
     <div class="ft-grid">
       <div class="ft-card"><div class="ft-icon">🎹</div><div class="ft-name">6 Modelos de Piano</div><div class="ft-desc">Concert Grand, Studio Grand, Felt Piano, Bright Grand, Upright e Electric</div></div>
-      <div class="ft-card"><div class="ft-icon">🎛️</div><div class="ft-name">54+ Sons Inclusos</div><div class="ft-desc">Bass, Bells, Flutes, Guitars, Keys, Pads, Strings, Synths</div></div>
-      <div class="ft-card"><div class="ft-icon">🔊</div><div class="ft-name">Motor de Sintese</div><div class="ft-desc">Sintese aditiva com harmonicos modelados fisicamente</div></div>
+      <div class="ft-card"><div class="ft-icon">🎛️</div><div class="ft-name">54+ Sons Inclusos</div><div class="ft-desc">Bass, Bells, Flutes, Guitars, Keys, Pads, Strings e Synths</div></div>
+      <div class="ft-card"><div class="ft-icon">🔊</div><div class="ft-name">Motor de Sintese</div><div class="ft-desc">Harmonicos modelados fisicamente com decay natural</div></div>
       <div class="ft-card"><div class="ft-icon">🎚️</div><div class="ft-name">9 Controles</div><div class="ft-desc">Tone, Dynamics, Hammer, Body, Width, Ambience, Mechanical, Release, Output</div></div>
-      <div class="ft-card"><div class="ft-icon">🎹</div><div class="ft-name">Teclado Virtual</div><div class="ft-desc">Teclado MIDI integrado de C2 a C7 com 5 oitavas</div></div>
-      <div class="ft-card"><div class="ft-icon">💻</div><div class="ft-name">VST3 + Standalone</div><div class="ft-desc">Use em qualquer DAW ou sozinho sem DAW</div></div>
+      <div class="ft-card"><div class="ft-icon">🎹</div><div class="ft-name">Teclado Virtual</div><div class="ft-desc">Teclado MIDI integrado de C2 a C7 com 5 oitavas completas</div></div>
+      <div class="ft-card"><div class="ft-icon">💻</div><div class="ft-name">VST3 + Standalone</div><div class="ft-desc">Use em qualquer DAW ou abra direto sem precisar de DAW</div></div>
     </div>
-    <div style="margin-top:24px;text-align:center"><div style="font-size:10px;color:#4a392a">GHZ Plugin — www.ghzplugin.com.br</div></div>
   </div>
 </div>
 
@@ -152,11 +123,8 @@ h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}h1 span{co
       <div class="ct-card"><span>🎵</span>Pro Tools</div>
       <div class="ct-card"><span>💻</span>Standalone</div>
     </div>
-    <div style="margin-top:30px;text-align:center">
-      <div style="font-size:14px;color:#eee6d4;font-weight:800">Windows 10 / 11 — 64 bits</div>
-      <div style="font-size:11px;color:#a69882;margin-top:4px">Instalador automatico — Setup unico</div>
-      <div style="font-size:10px;color:#4a392a;margin-top:16px">GHZ Plugin — www.ghzplugin.com.br</div>
-    </div>
+    <div class="ct-footer">Windows 10 / 11 — 64 bits</div>
+    <div class="ct-footer-sub">Instalador automatico — Setup unico</div>
   </div>
 </div>
 
@@ -165,22 +133,14 @@ h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}h1 span{co
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-// Render piano keys
-const keys = document.getElementById('pianoKeys');
-if (keys) {
-  let html = '';
-  const blackPositions = [1,3,6,8,10,13,15,18,20,22,25,27,30,32,34,37,39,42,44,46,49,51,54,56,58];
-  for (let i = 0; i < 61; i++) html += '<div class="sp-key-white"></div>';
-  keys.innerHTML = html;
-  const w = 100 / 61;
-  blackPositions.forEach(p => {
-    if (p < 61) {
-      const el = document.createElement('div');
-      el.className = 'sp-key-black';
-      el.style.left = ((p * w) - (w * 0.3)) + '%';
-      keys.appendChild(el);
-    }
-  });
+function loadScreenshot(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const area = document.getElementById('screenshotArea');
+    area.innerHTML = `<div class="screenshot-wrap"><img src="${e.target.result}" style="display:block;width:680px;height:auto;border-radius:12px"></div>`;
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 async function dl(id, name) {
