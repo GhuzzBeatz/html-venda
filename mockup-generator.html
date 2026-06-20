@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GHZ Plugin — Gerador de Imagens ML</title>
+<style>
+:root { --bg:#0f1117; --card:#1c2233; --border:#2a3350; --primary:#4f8ef7; --green:#22d3a0; --fg:#e8eaf0; --muted:#5a6480 }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}
+h1 span{color:var(--primary)}
+.sub{text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:end}
+.controls label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px}
+.controls input,.controls select{background:#161b27;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--fg);font-size:13px;font-family:inherit;outline:none}
+.controls input:focus,.controls select:focus{border-color:var(--primary)}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:800;font-family:inherit;min-height:42px}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-green{background:var(--green);color:#000}
+
+/* Preview */
+.preview-wrap{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+.preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+
+/* Mockup Canvas */
+.mockup{width:800px;height:800px;position:relative;overflow:hidden}
+
+/* Template 1: Hero */
+.tpl-hero{background:linear-gradient(135deg,#1a1014 0%,#2a1a10 50%,#0f1117 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px}
+.tpl-hero .app-screenshot{width:700px;height:420px;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);margin-bottom:30px;display:flex;align-items:center;justify-content:center;background:#15110f}
+.tpl-hero .app-screenshot img{width:100%;height:100%;object-fit:contain}
+.tpl-hero .title{font-size:48px;font-weight:900;color:#eee6d4;letter-spacing:2px}
+.tpl-hero .subtitle{font-size:18px;color:#d5a94f;font-weight:700;margin-top:8px}
+.tpl-hero .badge-row{display:flex;gap:12px;margin-top:20px}
+.tpl-hero .badge{background:rgba(213,169,79,.15);border:1px solid rgba(213,169,79,.3);color:#d5a94f;padding:6px 16px;border-radius:20px;font-size:13px;font-weight:700}
+
+/* Template 2: Features */
+.tpl-features{background:linear-gradient(180deg,#15110f,#0f1117);padding:50px 40px;display:flex;flex-direction:column;align-items:center}
+.tpl-features .title{font-size:36px;font-weight:900;color:#eee6d4;margin-bottom:30px;text-align:center}
+.tpl-features .feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%}
+.tpl-features .feat{background:rgba(255,255,255,.04);border:1px solid rgba(213,169,79,.2);border-radius:12px;padding:24px;text-align:center}
+.tpl-features .feat-icon{font-size:36px;margin-bottom:8px}
+.tpl-features .feat-name{font-size:16px;font-weight:800;color:#eee6d4}
+.tpl-features .feat-desc{font-size:12px;color:#a69882;margin-top:4px}
+
+/* Template 3: Compatibility */
+.tpl-compat{background:linear-gradient(135deg,#0f1117,#1a1418);padding:50px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.tpl-compat .title{font-size:32px;font-weight:900;color:#eee6d4;margin-bottom:10px}
+.tpl-compat .sub{font-size:14px;color:#a69882;margin-bottom:30px}
+.tpl-compat .daw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tpl-compat .daw{background:rgba(255,255,255,.05);border:1px solid rgba(213,169,79,.15);border-radius:12px;padding:20px;text-align:center;font-size:14px;font-weight:700;color:#eee6d4}
+.tpl-compat .daw span{display:block;font-size:28px;margin-bottom:6px}
+
+.download-info{text-align:center;margin-top:16px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1><span>GHZ</span> Plugin — Gerador de Imagens ML</h1>
+  <p class="sub">Gere imagens de alta qualidade para anuncios no Mercado Livre. Clique em "Baixar PNG" para salvar.</p>
+
+  <div class="controls">
+    <div>
+      <label>App / Produto</label>
+      <select id="appSelect" onchange="updatePreviews()">
+        <option value="spectra" selected>Spectra Piano (VST3)</option>
+        <option value="mesaup">MesaUp</option>
+        <option value="medcore">MedCore</option>
+        <option value="petflow">PetFlow</option>
+        <option value="studioflow">StudioFlow</option>
+        <option value="nexhotel">NexHotel</option>
+        <option value="imobcore">ImobCore</option>
+        <option value="folhapro">FolhaPro</option>
+        <option value="zapbot">ZapBot</option>
+        <option value="zapdisparo">ZapDisparo</option>
+      </select>
+    </div>
+    <div>
+      <label>Screenshot do App (opcional)</label>
+      <input type="file" id="screenshotFile" accept="image/*" onchange="loadScreenshot(this)">
+    </div>
+    <button class="btn btn-primary" onclick="downloadAll()">Baixar Todas (PNG)</button>
+  </div>
+
+  <div class="preview-wrap">
+    <!-- Preview 1: Hero -->
+    <div class="preview-card">
+      <div style="padding:8px 12px;font-size:11px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between">
+        <span>Imagem 1 — Hero (800x800)</span>
+        <button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="downloadCanvas('mockup1')">Baixar PNG</button>
+      </div>
+      <div class="mockup tpl-hero" id="mockup1">
+        <div class="app-screenshot" id="screenshotBox"><img id="screenshotImg" src="" style="display:none"><div id="screenshotPlaceholder" style="color:#4a392a;font-size:14px">Carregue um screenshot acima</div></div>
+        <div class="title" id="heroTitle">SPECTRA PIANO</div>
+        <div class="subtitle" id="heroSubtitle">Plugin VST3 — Piano Hibrido Modelado</div>
+        <div class="badge-row">
+          <div class="badge" id="badge1">VST3</div>
+          <div class="badge" id="badge2">Windows</div>
+          <div class="badge" id="badge3">Standalone</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview 2: Features -->
+    <div class="preview-card">
+      <div style="padding:8px 12px;font-size:11px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between">
+        <span>Imagem 2 — Funcionalidades (800x800)</span>
+        <button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="downloadCanvas('mockup2')">Baixar PNG</button>
+      </div>
+      <div class="mockup tpl-features" id="mockup2">
+        <div class="title" id="featTitle">Funcionalidades</div>
+        <div class="feat-grid" id="featGrid"></div>
+      </div>
+    </div>
+
+    <!-- Preview 3: Compatibility -->
+    <div class="preview-card">
+      <div style="padding:8px 12px;font-size:11px;font-weight:700;color:var(--muted);display:flex;justify-content:space-between">
+        <span>Imagem 3 — Compatibilidade (800x800)</span>
+        <button class="btn btn-green" style="padding:4px 12px;font-size:11px;min-height:auto" onclick="downloadCanvas('mockup3')">Baixar PNG</button>
+      </div>
+      <div class="mockup tpl-compat" id="mockup3">
+        <div class="title" id="compatTitle">Compatibilidade</div>
+        <div class="sub" id="compatSub">Funciona com as principais DAWs e sistemas</div>
+        <div class="daw-grid" id="dawGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="download-info">As imagens sao geradas em 800x800px — tamanho ideal para o Mercado Livre.</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const APP_DATA = {
+  spectra: {
+    title: 'SPECTRA PIANO', subtitle: 'Plugin VST3 — Piano Hibrido Modelado',
+    badges: ['VST3', 'Windows', 'Standalone'],
+    features: [
+      { icon:'🎹', name:'6 Modelos de Piano', desc:'Grand, Felt, Upright, Electric e mais' },
+      { icon:'🎛️', name:'54+ Sons', desc:'Bass, Bells, Pads, Strings, Synths' },
+      { icon:'🔊', name:'Motor Modelado', desc:'Sintese aditiva com harmonicos reais' },
+      { icon:'🎚️', name:'9 Controles', desc:'Tone, Dynamics, Hammer, Body, Width...' }
+    ],
+    daws: [
+      { icon:'🎵', name:'FL Studio' }, { icon:'🎵', name:'Ableton Live' }, { icon:'🎵', name:'Reason' },
+      { icon:'🎵', name:'Logic Pro' }, { icon:'🎵', name:'Cubase' }, { icon:'🎵', name:'Studio One' },
+      { icon:'🎵', name:'Reaper' }, { icon:'🎵', name:'Pro Tools' }, { icon:'💻', name:'Standalone' }
+    ]
+  },
+  mesaup: { title:'MESAUP', subtitle:'Sistema Completo para Bares e Lanchonetes', badges:['Windows','Offline','Licenca'], features:[{icon:'🪑',name:'Mesas e Comandas',desc:'Gerencie mesas abertas'},{icon:'💰',name:'PDV Completo',desc:'Caixa com fechamento'},{icon:'📋',name:'Cardapio Digital',desc:'QR Code para clientes'},{icon:'📊',name:'Financeiro',desc:'Relatorios detalhados'}], daws:[] },
+  medcore: { title:'MEDCORE', subtitle:'Sistema Medico Completo para Clinicas', badges:['Windows','Cloud','Supabase'], features:[{icon:'🏥',name:'Prontuarios',desc:'Historico do paciente'},{icon:'📅',name:'Agenda',desc:'Agendamento de consultas'},{icon:'💊',name:'Prescricoes',desc:'Receituario digital'},{icon:'📊',name:'Financeiro',desc:'Faturamento e relatorios'}], daws:[] },
+  petflow: { title:'PETFLOW', subtitle:'Sistema para Pet Shops e Veterinarios', badges:['Windows','Offline','Licenca'], features:[{icon:'🐾',name:'Animais',desc:'Cadastro completo'},{icon:'💉',name:'Vacinas',desc:'Controle de vacinacao'},{icon:'📅',name:'Agenda',desc:'Consultas e banhos'},{icon:'💰',name:'Financeiro',desc:'Vendas e servicos'}], daws:[] },
+  studioflow: { title:'STUDIOFLOW', subtitle:'Sistema para Saloes e Barbearias', badges:['Windows','Offline','Licenca'], features:[{icon:'💇',name:'Servicos',desc:'Catalogo de servicos'},{icon:'📅',name:'Agenda',desc:'Agendamento online'},{icon:'👥',name:'Clientes',desc:'Historico completo'},{icon:'💰',name:'Financeiro',desc:'Comissoes e caixa'}], daws:[] },
+  nexhotel: { title:'NEXHOTEL', subtitle:'Sistema de Gestao Hoteleira', badges:['Windows','Offline','Licenca'], features:[{icon:'🏨',name:'Reservas',desc:'Check-in e check-out'},{icon:'🛏️',name:'Quartos',desc:'Mapa de ocupacao'},{icon:'👥',name:'Hospedes',desc:'Cadastro completo'},{icon:'💰',name:'Financeiro',desc:'Faturamento diario'}], daws:[] },
+  imobcore: { title:'IMOBCORE', subtitle:'Sistema Imobiliario Completo', badges:['Windows','Offline','Licenca'], features:[{icon:'🏠',name:'Imoveis',desc:'Catalogo completo'},{icon:'📄',name:'Contratos',desc:'Gestao de alugueis'},{icon:'👥',name:'Clientes',desc:'Proprietarios e inquilinos'},{icon:'💰',name:'Financeiro',desc:'Receitas e despesas'}], daws:[] },
+  folhapro: { title:'FOLHAPRO', subtitle:'Sistema RH e Folha de Pagamento', badges:['Windows','Cloud','Supabase'], features:[{icon:'👥',name:'Funcionarios',desc:'Cadastro completo'},{icon:'💰',name:'Folha',desc:'Calculo automatico'},{icon:'📄',name:'Holerite',desc:'Geracao em PDF'},{icon:'📊',name:'Relatorios',desc:'INSS, FGTS, IRRF'}], daws:[] },
+  zapbot: { title:'ZAPBOT', subtitle:'Bot de Atendimento WhatsApp', badges:['Windows','WhatsApp','Chromium'], features:[{icon:'🤖',name:'Atendimento Auto',desc:'Respostas automaticas'},{icon:'📋',name:'Menus',desc:'Menus interativos'},{icon:'📊',name:'Relatorios',desc:'Historico de atendimentos'},{icon:'🔄',name:'Atualizacao Auto',desc:'Sempre na ultima versao'}], daws:[] },
+  zapdisparo: { title:'ZAPDISPARO', subtitle:'Disparador de Mensagens WhatsApp', badges:['Windows','WhatsApp','Chromium'], features:[{icon:'📨',name:'Disparo em Massa',desc:'Envie para muitos contatos'},{icon:'📋',name:'Listas',desc:'Importe contatos'},{icon:'⏰',name:'Agendamento',desc:'Programe envios'},{icon:'📊',name:'Relatorios',desc:'Taxa de entrega'}], daws:[] }
+};
+
+let currentScreenshot = null;
+
+function updatePreviews() {
+  const app = APP_DATA[document.getElementById('appSelect').value] || APP_DATA.spectra;
+
+  document.getElementById('heroTitle').textContent = app.title;
+  document.getElementById('heroSubtitle').textContent = app.subtitle;
+  const badgeRow = document.querySelector('.badge-row');
+  badgeRow.innerHTML = app.badges.map(b => `<div class="badge">${b}</div>`).join('');
+
+  document.getElementById('featTitle').textContent = app.title;
+  document.getElementById('featGrid').innerHTML = app.features.map(f =>
+    `<div class="feat"><div class="feat-icon">${f.icon}</div><div class="feat-name">${f.name}</div><div class="feat-desc">${f.desc}</div></div>`
+  ).join('');
+
+  document.getElementById('compatTitle').textContent = app.title;
+  if (app.daws.length) {
+    document.getElementById('compatSub').textContent = 'Funciona com as principais DAWs';
+    document.getElementById('dawGrid').innerHTML = app.daws.map(d =>
+      `<div class="daw">${d.icon ? `<span>${d.icon}</span>` : ''}${d.name}</div>`
+    ).join('');
+  } else {
+    document.getElementById('compatSub').textContent = 'Compativel com Windows 10/11';
+    document.getElementById('dawGrid').innerHTML = `
+      <div class="daw"><span>💻</span>Windows 10</div>
+      <div class="daw"><span>💻</span>Windows 11</div>
+      <div class="daw"><span>🔒</span>Licenca por PC</div>
+      <div class="daw"><span>🔄</span>Atualizacao Auto</div>
+      <div class="daw"><span>📞</span>Suporte WhatsApp</div>
+      <div class="daw"><span>☁️</span>Dados na Nuvem</div>`;
+  }
+}
+
+function loadScreenshot(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('screenshotImg');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('screenshotPlaceholder').style.display = 'none';
+    currentScreenshot = e.target.result;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+async function downloadCanvas(id) {
+  const el = document.getElementById(id);
+  const canvas = await html2canvas(el, { scale: 2, backgroundColor: null, useCORS: true, width: 800, height: 800 });
+  const link = document.createElement('a');
+  const app = document.getElementById('appSelect').value;
+  link.download = `${app}-${id}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+async function downloadAll() {
+  for (const id of ['mockup1', 'mockup2', 'mockup3']) {
+    await downloadCanvas(id);
+    await new Promise(r => setTimeout(r, 500));
+  }
+}
+
+updatePreviews();
+</script>
+</body>
+</html>
