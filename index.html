@@ -162,11 +162,11 @@ const APPS = [
   { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDS',  online:true,  repo:'GhuzzBeatz/ZAPDISPARO', setup:'ZapDisparo.Setup.exe' },
   { id:'zapbot',     nome:'ZapBot',    desc:'Bot de Atendimento',     prefix:'ZAPBT',   online:true,  repo:'GhuzzBeatz/ZAPBOT',     setup:'ZapBot.Setup.exe' },
   { id:'zapbotia',   nome:'ZapBot IA', desc:'Bot IA WhatsApp',       prefix:'ZPBIA',   online:true,  repo:'GhuzzBeatz/ZAPBOT-COM-IA', setup:'ZapBot.IA.Setup.exe' },
-  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC',         prefix:'CLEAN',   online:false, repo:'GhuzzBeatz/cleanboost', setup:'CleanBoost.Setup.exe', salt:'GHZ2026CLEANBOOST', mult:41 },
-  { id:'pontopro',   nome:'PontoPro',  desc:'Controle de Ponto',      prefix:'PONTO',   online:false, repo:'GhuzzBeatz/pontopro',   setup:'PontoPro.Setup.exe', salt:'GHZ2026PONTOPRO', mult:37 },
-  { id:'irpro',      nome:'IRPro',     desc:'Organizador de IR',      prefix:'IRPRO',   online:false, repo:'GhuzzBeatz/irpro',      setup:'IRPro.Setup.exe', salt:'GHZ2026IRPRO', mult:43 },
-  { id:'recoverx',   nome:'RecoverX',  desc:'Recuperacao de Dados',   prefix:'RECVX',   online:false, repo:'GhuzzBeatz/recoverx',   setup:'RecoverX.Setup.exe', salt:'GHZ2026RECOVERX', mult:53 },
-  { id:'cpfcheck',   nome:'CPFCheck',  desc:'Verificador de CPF',     prefix:'CPFCK',   online:false, repo:'GhuzzBeatz/CPFCheck',   setup:'CPFCheck.Setup.exe', salt:'GHZ2026CPFCHECK', mult:41 }
+  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC',         prefix:'CLEAN',   online:true, repo:'GhuzzBeatz/cleanboost', setup:'CleanBoost.Setup.exe' },
+  { id:'pontopro',   nome:'PontoPro',  desc:'Controle de Ponto',      prefix:'PONTO',   online:true, repo:'GhuzzBeatz/pontopro',   setup:'PontoPro.Setup.exe' },
+  { id:'irpro',      nome:'IRPro',     desc:'Organizador de IR',      prefix:'IRPRO',   online:true, repo:'GhuzzBeatz/irpro',      setup:'IRPro.Setup.exe' },
+  { id:'recoverx',   nome:'RecoverX',  desc:'Recuperacao de Dados',   prefix:'RECVX',   online:true, repo:'GhuzzBeatz/recoverx',   setup:'RecoverX.Setup.exe' },
+  { id:'cpfcheck',   nome:'CPFCheck',  desc:'Verificador de CPF',     prefix:'CPFCK',   online:true, repo:'GhuzzBeatz/CPFCheck',   setup:'CPFCheck.Setup.exe' }
 ];
 
 let appAtivo = null;
@@ -178,7 +178,7 @@ function downloadUrl(app) {
 function renderApps() {
   document.getElementById('appGrid').innerHTML = APPS.map(a => `
     <button class="app-btn ${appAtivo && appAtivo.id === a.id ? 'ativo' : ''}" onclick="selecionarApp('${a.id}')">
-      <div class="nome">${a.nome} <span class="badge ${a.online ? 'badge-online' : 'badge-local'}">${a.online ? 'Supabase' : 'Local'}</span></div>
+      <div class="nome">${a.nome} <span class="badge badge-online">Supabase</span></div>
       <div class="prefix">${a.prefix}-XXXX-XXXX-XXXX-XXXX</div>
     </button>`).join('');
 }
@@ -188,12 +188,6 @@ function selecionarApp(id) {
   renderApps();
 }
 
-function gerarChaveLocal(app, n) {
-  const p1 = String(n).padStart(4, '0');
-  const p2 = btoa(n + app.salt).replace(/[^A-Z0-9]/gi, '').slice(0, 4).toUpperCase();
-  const p3 = String((n * app.mult) % 9999).padStart(4, '0');
-  return `${app.prefix}-${p1}-${p2}-${p3}`;
-}
 
 function toggleSalvarSenha() {
   const cb = document.getElementById('salvarSenha');
@@ -249,12 +243,7 @@ async function gerarTudo() {
   btn.disabled = true; btn.textContent = 'Gerando...';
 
   try {
-    if (appAtivo.online) {
-      chave = await gerarChaveSupabase(appAtivo.id, cliente, pedidoML);
-    } else {
-      const n = Math.floor(Math.random() * 9000) + 1000;
-      chave = gerarChaveLocal(appAtivo, n);
-    }
+    chave = await gerarChaveSupabase(appAtivo.id, cliente, pedidoML);
   } catch (e) {
     alert('Erro ao gerar chave: ' + e.message);
     btn.disabled = false; btn.textContent = 'Gerar Chave e Mensagens';
