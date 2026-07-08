@@ -342,7 +342,8 @@ const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
 const LS_KEY = '@GHZ:admin_token';
 
-const GITHUB_REPOS = ['mesaup','NexHotel','petflow','studioflow','ImobCore','MEDCORE','GhuzzBeatz-FOLHAPRO','ZAPBOT','ZAPDISPARO','cleanboost','pontopro','irpro','recoverx','CPFCheck','STOQUE-STORE','ASOFACIL','CLINICA_Maziero','mailpro','site-ghz','html-venda'];
+const DOWNLOAD_API = `${SUPABASE_URL}/functions/v1/ghz-app-downloads`;
+const DOWNLOAD_APPS = ['mesaup','nexhotel','petflow','studioflow','imobcore','medcore','folhapro','zapbot','zapdisparo','zapbotia','cleanboost','pontopro','irpro','recoverx','cpfcheck','stoquestore','asofacil','clinicamaziero','mailpro','spectrapiano'];
 const GH_CACHE_KEY = '@GHZ:gh_cache';
 const GH_CACHE_TTL = 5 * 60 * 1000;
 
@@ -637,19 +638,21 @@ async function loadGitHub() {
   }
   try {
     const results = await Promise.all(
-      GITHUB_REPOS.map(repo =>
-        fetch(`https://api.github.com/repos/GhuzzBeatz/${repo}/releases`)
-          .then(r => r.ok ? r.json() : [])
+      DOWNLOAD_APPS.map(appId =>
+        fetch(`${DOWNLOAD_API}?app=${encodeURIComponent(appId)}`)
+          .then(r => r.ok ? r.json() : null)
           .catch(() => [])
-          .then(releases => {
-            let totalDl = 0;
-            let latest = null;
-            let latestDate = null;
-            releases.forEach(rel => {
-              (rel.assets || []).forEach(a => { totalDl += a.download_count || 0; });
-              if (!latest) { latest = rel.tag_name || rel.name; latestDate = rel.published_at || rel.created_at; }
-            });
-            return { name: repo, version: latest, downloads: totalDl, updated: latestDate, releaseCount: releases.length };
+          .then(data => {
+            if (!data || !data.ok) {
+              return { name: appId, version: null, downloads: 0, updated: null, releaseCount: 0 };
+            }
+            return {
+              name: data.name || appId,
+              version: data.tag_name || data.version || null,
+              downloads: data.downloads || 0,
+              updated: data.published_at || null,
+              releaseCount: 1
+            };
           })
       )
     );

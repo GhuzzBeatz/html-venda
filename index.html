@@ -149,30 +149,31 @@
 <script>
 const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
+const DOWNLOAD_API = `${SUPABASE_URL}/functions/v1/ghz-app-downloads`;
 
 const APPS = [
-  { id:'mesaup',     nome:'MesaUp',     desc:'Bar / Lanchonete',      prefix:'MESAUP',  online:true,  repo:'GhuzzBeatz/mesaup',     setup:'MesaUp.Setup.exe' },
-  { id:'nexhotel',   nome:'NexHotel',   desc:'Hotelaria',             prefix:'NEXHTL',  online:true,  repo:'GhuzzBeatz/NexHotel',   setup:'NexHotel.Setup.exe' },
-  { id:'petflow',    nome:'PetFlow',    desc:'Pet Shop / Vet',        prefix:'PETFLW',  online:true,  repo:'GhuzzBeatz/petflow',    setup:'PetFlow.Setup.exe' },
-  { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia',     prefix:'STFLOW',  online:true,  repo:'GhuzzBeatz/studioflow', setup:'StudioFlow.Setup.exe' },
-  { id:'imobcore',   nome:'ImobCore',   desc:'Sistema Imobiliario',   prefix:'IMOBC',   online:true,  repo:'GhuzzBeatz/ImobCore',   setup:'ImobCore.Setup.exe' },
-  { id:'medcore',    nome:'MedCore',    desc:'Clinica Medica',        prefix:'MEDCOR',  online:true,  repo:'GhuzzBeatz/MEDCORE',    setup:'MedCore.Setup.exe' },
-  { id:'folhapro',   nome:'FolhaPro',   desc:'RH e Folha',           prefix:'FOLHA',   online:true,  repo:'GhuzzBeatz/GhuzzBeatz-FOLHAPRO', setup:'FolhaPro.Setup.exe' },
-  { id:'spectrapiano', nome:'Spectra Piano', desc:'Plugin VST3 Piano', prefix:'SPCTR',  online:true,  repo:'GhuzzBeatz/spectra-piano', setup:'Spectra Piano Setup 1.2.exe' },
-  { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDS',  online:true,  repo:'GhuzzBeatz/ZAPDISPARO', setup:'ZapDisparo.Setup.exe' },
-  { id:'zapbot',     nome:'ZapBot',    desc:'Bot de Atendimento',     prefix:'ZAPBT',   online:true,  repo:'GhuzzBeatz/ZAPBOT',     setup:'ZapBot.Setup.exe' },
-  { id:'zapbotia',   nome:'ZapBot IA', desc:'Bot IA WhatsApp',       prefix:'ZPBIA',   online:true,  repo:'GhuzzBeatz/ZAPBOT-COM-IA', setup:'ZapBot.IA.Setup.exe' },
-  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC',         prefix:'CLEAN',   online:false, repo:'GhuzzBeatz/cleanboost', setup:'CleanBoost.Setup.exe', salt:'GHZ2026CLEANBOOST', mult:41 },
-  { id:'pontopro',   nome:'PontoPro',  desc:'Controle de Ponto',      prefix:'PONTO',   online:false, repo:'GhuzzBeatz/pontopro',   setup:'PontoPro.Setup.exe', salt:'GHZ2026PONTOPRO', mult:37 },
-  { id:'irpro',      nome:'IRPro',     desc:'Organizador de IR',      prefix:'IRPRO',   online:false, repo:'GhuzzBeatz/irpro',      setup:'IRPro.Setup.exe', salt:'GHZ2026IRPRO', mult:43 },
-  { id:'recoverx',   nome:'RecoverX',  desc:'Recuperacao de Dados',   prefix:'RECVX',   online:false, repo:'GhuzzBeatz/recoverx',   setup:'RecoverX.Setup.exe', salt:'GHZ2026RECOVERX', mult:53 },
-  { id:'cpfcheck',   nome:'CPFCheck',  desc:'Verificador de CPF',     prefix:'CPFCK',   online:false, repo:'GhuzzBeatz/CPFCheck',   setup:'CPFCheck.Setup.exe', salt:'GHZ2026CPFCHECK', mult:41 }
+  { id:'mesaup',     nome:'MesaUp',     desc:'Bar / Lanchonete',      prefix:'MESAUP',  online:true },
+  { id:'nexhotel',   nome:'NexHotel',   desc:'Hotelaria',             prefix:'NEXHTL',  online:true },
+  { id:'petflow',    nome:'PetFlow',    desc:'Pet Shop / Vet',        prefix:'PETFLW',  online:true },
+  { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia',     prefix:'STFLOW',  online:true },
+  { id:'imobcore',   nome:'ImobCore',   desc:'Sistema Imobiliario',   prefix:'IMOBC',   online:true },
+  { id:'medcore',    nome:'MedCore',    desc:'Clinica Medica',        prefix:'MEDCOR',  online:true },
+  { id:'folhapro',   nome:'FolhaPro',   desc:'RH e Folha',           prefix:'FOLHA',   online:true },
+  { id:'spectrapiano', nome:'Spectra Piano', desc:'Plugin VST3 Piano', prefix:'SPCTR',  online:true },
+  { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDS',  online:true },
+  { id:'zapbot',     nome:'ZapBot',    desc:'Bot de Atendimento',     prefix:'ZAPBT',   online:true },
+  { id:'zapbotia',   nome:'ZapBot IA', desc:'Bot IA WhatsApp',       prefix:'ZPBIA',   online:true },
+  { id:'cleanboost', nome:'CleanBoost', desc:'Limpeza de PC',         prefix:'CLEAN',   online:false, salt:'GHZ2026CLEANBOOST', mult:41 },
+  { id:'pontopro',   nome:'PontoPro',  desc:'Controle de Ponto',      prefix:'PONTO',   online:false, salt:'GHZ2026PONTOPRO', mult:37 },
+  { id:'irpro',      nome:'IRPro',     desc:'Organizador de IR',      prefix:'IRPRO',   online:false, salt:'GHZ2026IRPRO', mult:43 },
+  { id:'recoverx',   nome:'RecoverX',  desc:'Recuperacao de Dados',   prefix:'RECVX',   online:false, salt:'GHZ2026RECOVERX', mult:53 },
+  { id:'cpfcheck',   nome:'CPFCheck',  desc:'Verificador de CPF',     prefix:'CPFCK',   online:false, salt:'GHZ2026CPFCHECK', mult:41 }
 ];
 
 let appAtivo = null;
 
 function downloadUrl(app) {
-  return `https://github.com/${app.repo}/releases/latest/download/${app.setup}`;
+  return `${DOWNLOAD_API}?app=${encodeURIComponent(app.downloadId || app.id)}&download=1`;
 }
 
 function renderApps() {
