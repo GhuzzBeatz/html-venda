@@ -172,8 +172,13 @@ const APPS = [
 
 let appAtivo = null;
 
+const BAIXAR_PAGES = new Set(['mesaup','nexhotel','petflow','studioflow','imobcore','medcore','folhapro','spectrapiano','zapdisparo','zapbot','zapbotia','donestok']);
 function downloadUrl(app) {
-  return `${DOWNLOAD_API}?app=${encodeURIComponent(app.downloadId || app.id)}&download=1`;
+  const id = app.downloadId || app.id;
+  // Apps com pagina de download no site (verifica licenca + como instalar + video)
+  if (BAIXAR_PAGES.has(id)) return `https://ghzplugin.com.br/baixar/${id}.html`;
+  // Demais (licenca local) baixam direto
+  return `${DOWNLOAD_API}?app=${encodeURIComponent(id)}&download=1`;
 }
 
 function renderApps() {
