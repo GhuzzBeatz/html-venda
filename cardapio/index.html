@@ -77,8 +77,8 @@ function setStatus({title, sub, icon='🍽️', code='', danger=false}){
   }
   const frame = document.createElement('iframe');
   frame.title = 'Cardapio MesaUp';
-  // O HTML continua isolado, mas precisa executar o script que monta produtos e carrinho.
-  frame.setAttribute('sandbox', 'allow-scripts');
+  // Scripts montam o carrinho; a navegacao superior so e liberada apos o clique para abrir o WhatsApp.
+  frame.setAttribute('sandbox', 'allow-scripts allow-top-navigation-by-user-activation');
   frame.srcdoc = html;
   document.body.appendChild(frame);
 })();
