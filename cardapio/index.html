@@ -77,7 +77,8 @@ function setStatus({title, sub, icon='🍽️', code='', danger=false}){
   }
   const frame = document.createElement('iframe');
   frame.title = 'Cardapio MesaUp';
-  frame.setAttribute('sandbox', '');
+  // O HTML continua isolado, mas precisa executar o script que monta produtos e carrinho.
+  frame.setAttribute('sandbox', 'allow-scripts');
   frame.srcdoc = html;
   document.body.appendChild(frame);
 })();
