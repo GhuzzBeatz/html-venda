@@ -77,7 +77,7 @@ function setStatus({title, sub, icon='&#128241;', code='', danger=false}){
   }
   const frame = document.createElement('iframe');
   frame.title = 'Garcom Online MesaUp';
-  frame.setAttribute('sandbox', 'allow-scripts');
+  frame.setAttribute('sandbox', 'allow-scripts allow-same-origin');
   frame.srcdoc = html;
   document.body.appendChild(frame);
 })();
