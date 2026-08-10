@@ -157,7 +157,7 @@ const APPS = [
   { id:'petflow',    nome:'PetFlow',    desc:'Pet Shop / Vet',        prefix:'PETFLW',  online:true },
   { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia',     prefix:'STFLOW',  online:true },
   { id:'imobcore',   nome:'ImobCore',   desc:'Sistema Imobiliario',   prefix:'IMOBC',   online:true },
-  { id:'medcore',    nome:'MedCore',    desc:'Clinica Medica',        prefix:'MEDCOR',  online:true },
+  { id:'medcore',    nome:'MedCore Online Cloud', desc:'Clinica Medica (Cloud)', prefix:'MEDCOR', online:true, appId:'medcore_cloud', downloadId:'medcorecloud' },
   { id:'folhapro',   nome:'FolhaPro',   desc:'RH e Folha',           prefix:'FOLHA',   online:true },
   { id:'spectrapiano', nome:'Spectra Piano', desc:'Plugin VST3 Piano', prefix:'SPCTR',  online:true },
   { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDS',  online:true },
@@ -172,7 +172,8 @@ const APPS = [
 
 let appAtivo = null;
 
-const BAIXAR_PAGES = new Set(['mesaup','nexhotel','petflow','studioflow','imobcore','medcore','folhapro','spectrapiano','zapdisparo','zapbot','zapbotia','donestok']);
+// medcore usa downloadId 'medcorecloud' -> baixa direto pela Edge Function (instalador do MedCore Online Cloud)
+const BAIXAR_PAGES = new Set(['mesaup','nexhotel','petflow','studioflow','imobcore','folhapro','spectrapiano','zapdisparo','zapbot','zapbotia','donestok']);
 function downloadUrl(app) {
   const id = app.downloadId || app.id;
   // Apps com pagina de download no site (verifica licenca + como instalar + video)
@@ -256,7 +257,7 @@ async function gerarTudo() {
 
   try {
     if (appAtivo.online) {
-      chave = await gerarChaveSupabase(appAtivo.id, cliente, pedidoML);
+      chave = await gerarChaveSupabase(appAtivo.appId || appAtivo.id, cliente, pedidoML);
     } else {
       const n = Math.floor(Math.random() * 9000) + 1000;
       chave = gerarChaveLocal(appAtivo, n);
