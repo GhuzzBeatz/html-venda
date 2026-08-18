@@ -51,6 +51,7 @@
   .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px }
   .msg-titulo { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em }
   .msg-texto { font-size: 13px; color: var(--fg2); line-height: 1.8; white-space: pre-wrap; word-break: break-word }
+  .link-valor { display: block; color: var(--primary); font-size: 13px; line-height: 1.5; word-break: break-all }
   .tab-row { display: flex; gap: 6px; margin-bottom: 14px }
   .tab { padding: 7px 14px; border: 1px solid var(--border2); border-radius: 8px; background: transparent; color: var(--fg2); cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; transition: all .15s }
   .tab.ativo { background: var(--primary-bg); border-color: var(--primary-bdr); color: var(--primary) }
@@ -91,6 +92,26 @@
         <label>Numero do Pedido ML (opcional)</label>
         <input type="text" id="pedidoML" placeholder="Ex: 2000004567890123">
         <button class="btn btn-primary" id="btnGerar" onclick="gerarTudo()">Gerar Chave e Mensagens</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">Link de Download</div>
+      <div class="card-body">
+        <div class="msg-box">
+          <div class="msg-header">
+            <span class="msg-titulo">Pagina do Cliente</span>
+            <button class="btn-copy" onclick="copiarTexto(document.getElementById('downloadLink').textContent,'Link copiado!')">Copiar Link</button>
+          </div>
+          <a class="link-valor" id="downloadLink" href="#" target="_blank">Selecione um app</a>
+        </div>
+        <div class="msg-box">
+          <div class="msg-header">
+            <span class="msg-titulo">Texto para Reenvio</span>
+            <button class="btn-copy" onclick="copiarTexto(document.getElementById('downloadMsg').textContent,'Texto copiado!')">Copiar Texto</button>
+          </div>
+          <div class="msg-texto" id="downloadMsg">Selecione um app para gerar o texto.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -157,7 +178,7 @@ const APPS = [
   { id:'petflow',    nome:'PetFlow',    desc:'Pet Shop / Vet',        prefix:'PETFLW',  online:true },
   { id:'studioflow', nome:'StudioFlow', desc:'Salao / Barbearia',     prefix:'STFLOW',  online:true },
   { id:'imobcore',   nome:'ImobCore',   desc:'Sistema Imobiliario',   prefix:'IMOBC',   online:true },
-  { id:'medcore_cloud', nome:'MedCore', desc:'Clinica Medica',        prefix:'MEDCOR',  online:true, maxDevices:5, downloadUrl:`${DOWNLOAD_API}?app=medcorecloud&download=1` },
+  { id:'medcore_cloud', nome:'MedCore', desc:'Clinica Medica',        prefix:'MEDCOR',  online:true, maxDevices:5, downloadUrl:`${DOWNLOAD_API}?app=medcorecloud&download=1`, downloadPageUrl:'https://ghzplugin.com.br/baixar/medcore.html' },
   { id:'folhapro',   nome:'FolhaPro',   desc:'RH e Folha',           prefix:'FOLHA',   online:true },
   { id:'spectrapiano', nome:'Spectra Piano', desc:'Plugin VST3 Piano', prefix:'SPCTR',  online:true },
   { id:'zapdisparo', nome:'ZapDisparo', desc:'Disparador WhatsApp',   prefix:'ZAPDS',  online:true },
@@ -182,6 +203,30 @@ function downloadUrl(app) {
   return `${DOWNLOAD_API}?app=${encodeURIComponent(id)}&download=1`;
 }
 
+function downloadPageUrl(app) {
+  if (app.downloadPageUrl) return app.downloadPageUrl;
+  const id = app.downloadPageId || app.downloadId || app.id;
+  if (BAIXAR_PAGES.has(id)) return `https://ghzplugin.com.br/baixar/${id}.html`;
+  return downloadUrl(app);
+}
+
+function updateDownloadLinkBox() {
+  const linkEl = document.getElementById('downloadLink');
+  const msgEl = document.getElementById('downloadMsg');
+  if (!linkEl || !msgEl) return;
+  if (!appAtivo) {
+    linkEl.textContent = 'Selecione um app';
+    linkEl.removeAttribute('href');
+    msgEl.textContent = 'Selecione um app para gerar o texto.';
+    return;
+  }
+
+  const link = downloadPageUrl(appAtivo);
+  linkEl.textContent = link;
+  linkEl.href = link;
+  msgEl.textContent = `Ola! Para baixar novamente o ${appAtivo.nome}, acesse:\n\n${link}\n\nNa pagina, informe a sua chave de licenca para liberar o download.`;
+}
+
 function renderApps() {
   document.getElementById('appGrid').innerHTML = APPS.map(a => `
     <button class="app-btn ${appAtivo && appAtivo.id === a.id ? 'ativo' : ''}" onclick="selecionarApp('${a.id}')">
@@ -193,6 +238,7 @@ function renderApps() {
 function selecionarApp(id) {
   appAtivo = APPS.find(a => a.id === id);
   renderApps();
+  updateDownloadLinkBox();
 }
 
 function gerarChaveLocal(app, n) {
