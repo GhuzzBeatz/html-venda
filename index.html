@@ -168,9 +168,8 @@
 <div id="toast" style="display:none;position:fixed;bottom:20px;right:20px;background:#22d3a0;color:#000;padding:10px 18px;border-radius:9px;font-weight:700;font-size:13px;z-index:999">Copiado!</div>
 
 <script>
-const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
-const DOWNLOAD_API = `${SUPABASE_URL}/functions/v1/ghz-app-downloads`;
+const LICENSE_API = 'https://ghzplugin.com.br/api/ghz-license.php';
+const DOWNLOAD_API = 'https://ghzplugin.com.br/api/ghz-update.php';
 
 const APPS = [
   { id:'mesaup',     nome:'MesaUp',     desc:'Bar / Lanchonete',      prefix:'MESAUP',  online:true },
@@ -230,7 +229,7 @@ function updateDownloadLinkBox() {
 function renderApps() {
   document.getElementById('appGrid').innerHTML = APPS.map(a => `
     <button class="app-btn ${appAtivo && appAtivo.id === a.id ? 'ativo' : ''}" onclick="selecionarApp('${a.id}')">
-      <div class="nome">${a.nome} <span class="badge ${a.online ? 'badge-online' : 'badge-local'}">${a.online ? 'Supabase' : 'Local'}</span></div>
+      <div class="nome">${a.nome} <span class="badge ${a.online ? 'badge-online' : 'badge-local'}">${a.online ? 'GHZ' : 'Local'}</span></div>
       <div class="prefix">${a.prefix}-XXXX-XXXX-XXXX-XXXX</div>
     </button>`).join('');
 }
@@ -271,7 +270,7 @@ function toggleSalvarSenha() {
   }
 })();
 
-async function gerarChaveSupabase(app, cliente, pedidoML) {
+async function gerarChaveGhz(app, cliente, pedidoML) {
   const adminToken = document.getElementById('adminPassword').value.trim();
   if (!adminToken) throw new Error('Digite a senha administrativa.');
   if (document.getElementById('salvarSenha').checked) {
@@ -280,13 +279,13 @@ async function gerarChaveSupabase(app, cliente, pedidoML) {
   const body = { p_app_id: app.id, p_customer_name: cliente || null, p_admin_token: adminToken };
   if (app.maxDevices) body.p_max_devices = app.maxDevices;
   if (pedidoML) body.p_mercado_livre_order = pedidoML;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ghz_admin_create_license_v2`, {
+  const res = await fetch(`${LICENSE_API}?action=create`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error('Erro Supabase: ' + res.status);
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || 'Erro GHZ: ' + res.status);
   if (!data?.ok) throw new Error(data?.message || 'Erro ao criar licença');
   return data.license_key;
 }
@@ -304,7 +303,7 @@ async function gerarTudo() {
 
   try {
     if (appAtivo.online) {
-      chave = await gerarChaveSupabase(appAtivo, cliente, pedidoML);
+      chave = await gerarChaveGhz(appAtivo, cliente, pedidoML);
     } else {
       const n = Math.floor(Math.random() * 9000) + 1000;
       chave = gerarChaveLocal(appAtivo, n);
