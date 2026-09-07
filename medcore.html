@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GHZ Plugin - Gerador MedCore Cloud</title>
+<style>
+  :root {
+    --bg: #0f1117; --bg2: #161b27; --card: #1c2233; --card2: #222840;
+    --border: #2a3350; --border2: #3a4570;
+    --primary: #4f8ef7; --primary2: #3a7af0;
+    --primary-bg: rgba(79,142,247,.12); --primary-bdr: rgba(79,142,247,.3);
+    --green: #22d3a0; --green-bg: rgba(34,211,160,.1);
+    --red: #f05252; --red-bg: rgba(240,82,82,.12);
+    --fg: #e8eaf0; --fg2: #a0a8c0; --muted: #5a6480;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0 }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; padding: 24px }
+  .header { text-align: center; margin-bottom: 24px }
+  .header .titlebar { display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 4px }
+  .header h1 { font-size: 24px; font-weight: 900; margin: 0 }
+  .header h1 span { color: var(--primary) }
+  .header p { font-size: 13px; color: var(--muted); margin-top: 6px }
+  .nav-link { font-size: 12px; color: var(--primary); font-weight: 700; text-decoration: none; background: var(--primary-bg); border: 1px solid var(--primary-bdr); padding: 5px 12px; border-radius: 6px }
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 20px; max-width: 1120px; margin: 0 auto }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden }
+  .card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 10px }
+  .card-body { padding: 18px }
+  label { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 5px }
+  input { width: 100%; background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; color: var(--fg); font-size: 13px; outline: none; font-family: inherit; margin-bottom: 13px }
+  input:focus { border-color: var(--primary) }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+  .btn { width: 100%; padding: 12px; border: none; border-radius: 9px; cursor: pointer; font-size: 14px; font-weight: 800; font-family: inherit; transition: all .15s }
+  .btn-primary { background: var(--primary); color: #fff }
+  .btn-primary:hover { background: var(--primary2) }
+  .btn-primary:disabled { background: var(--border2); cursor: wait }
+  .btn-copy { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,211,160,.25); padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 12px; font-weight: 700; font-family: inherit; white-space: nowrap }
+  .btn-copy:hover { background: var(--green); color: #000 }
+  .chave-box { background: var(--bg2); border: 2px solid var(--primary-bdr); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; text-align: center }
+  .chave-valor { font-family: monospace; font-size: 22px; font-weight: 900; color: var(--primary); letter-spacing: 2px; word-break: break-all }
+  .chave-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .06em }
+  .meta-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px }
+  .meta-pill { font-size: 11px; font-weight: 700; color: var(--fg2); background: var(--bg2); border: 1px solid var(--border2); border-radius: 999px; padding: 4px 12px }
+  .meta-pill b { color: var(--primary) }
+  .msg-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px }
+  .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px }
+  .msg-titulo { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .07em }
+  .msg-texto { font-size: 13px; color: var(--fg2); line-height: 1.8; white-space: pre-wrap; word-break: break-word }
+  .tab-row { display: flex; gap: 6px; margin-bottom: 14px }
+  .tab { padding: 7px 14px; border: 1px solid var(--border2); border-radius: 8px; background: transparent; color: var(--fg2); cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; transition: all .15s }
+  .tab.ativo { background: var(--primary-bg); border-color: var(--primary-bdr); color: var(--primary) }
+  .status { display: none; border-radius: 9px; padding: 11px 14px; margin-bottom: 14px; font-size: 13px; font-weight: 700; white-space: pre-line }
+  .status.ok { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,211,160,.25) }
+  .status.err { background: var(--red-bg); color: var(--red); border: 1px solid var(--red) }
+  .historico-item { padding: 10px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 10px }
+  .historico-item .info { flex: 1; min-width: 0 }
+  .historico-item .app-nome { font-size: 12px; font-weight: 700; color: var(--fg) }
+  .historico-item .chave-mini { font-family: monospace; font-size: 12px; color: var(--primary); margin-top: 2px }
+  .historico-item .data { font-size: 10px; color: var(--muted) }
+  .historico-item .acoes { display: flex; gap: 5px; flex-shrink: 0 }
+  .empty { text-align: center; color: var(--muted); padding: 24px; font-size: 12px }
+  .hint { font-size: 11px; color: var(--muted); line-height: 1.55; margin-top: -6px; margin-bottom: 12px }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="titlebar">
+    <h1><span>MedCore</span> Cloud — Gerador de Licenca</h1>
+    <a class="nav-link" href="index.html">Gerador Geral</a>
+    <a class="nav-link" href="dashboard.html">Dashboard</a>
+  </div>
+  <p>Gera licencas do MedCore Online Cloud (dados no Supabase do proprio cliente). Padrao MEDCOR-XXXX-XXXX-XXXX-XXXX.</p>
+</div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <div class="card-header">Dados da Licenca</div>
+      <div class="card-body">
+        <label>Nome do Cliente / Clinica</label>
+        <input type="text" id="nomeCliente" placeholder="Ex: Clinica Saude Total">
+
+        <label>E-mail (opcional)</label>
+        <input type="email" id="emailCliente" placeholder="cliente@email.com">
+
+        <label>WhatsApp (opcional)</label>
+        <input type="text" id="whatsCliente" placeholder="(11) 90000-0000">
+
+        <label>Numero do Pedido ML (opcional)</label>
+        <input type="text" id="pedidoML" placeholder="Ex: 2000004567890123">
+
+        <div class="two-col">
+          <div>
+            <label>Dispositivos</label>
+            <input type="number" id="maxDevices" value="5" min="1" max="99">
+          </div>
+          <div>
+            <label>Validade (dias)</label>
+            <input type="number" id="validDays" value="365" min="0">
+          </div>
+        </div>
+        <div class="hint">Dispositivos = quantos computadores podem ativar a mesma chave. Validade 0 = licenca sem vencimento.</div>
+
+        <label>Observacoes (interno, opcional)</label>
+        <input type="text" id="notas" placeholder="Observacao interna">
+
+        <button class="btn btn-primary" id="btnGerar" onclick="gerarLicenca()">Gerar Licenca MedCore Cloud</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div id="status" class="status"></div>
+
+    <div class="card" id="resultCard" style="display:none">
+      <div class="card-header">Chave Gerada</div>
+      <div class="card-body">
+        <div class="chave-box">
+          <div class="chave-valor" id="chaveGerada">-</div>
+          <div class="chave-label" id="chaveLabel">MedCore Cloud</div>
+        </div>
+        <div class="meta-row" id="metaRow"></div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn-copy" style="flex:1" onclick="copiarTexto(document.getElementById('chaveGerada').textContent,'Chave copiada!')">Copiar Chave</button>
+          <button class="btn-copy" style="flex:1" onclick="salvarHistorico()">Salvar no Historico</button>
+        </div>
+        <div class="tab-row">
+          <button class="tab ativo" onclick="trocarTab('ml',this)">Mercado Livre</button>
+          <button class="tab" onclick="trocarTab('wpp',this)">WhatsApp</button>
+        </div>
+        <div id="tabMl">
+          <div class="msg-box">
+            <div class="msg-header">
+              <span class="msg-titulo" id="mlTitulo">Mensagem Mercado Livre</span>
+              <button class="btn-copy" onclick="copiarTexto(document.getElementById('msgML').textContent,'Mensagem ML copiada!')">Copiar</button>
+            </div>
+            <div class="msg-texto" id="msgML">-</div>
+          </div>
+        </div>
+        <div id="tabWpp" style="display:none">
+          <div class="msg-box">
+            <div class="msg-header">
+              <span class="msg-titulo">Mensagem WhatsApp</span>
+              <button class="btn-copy" onclick="copiarTexto(document.getElementById('msgWPP').textContent,'Mensagem WhatsApp copiada!')">Copiar</button>
+            </div>
+            <div class="msg-texto" id="msgWPP">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-header">
+        <span>Historico de Chaves (este navegador)</span>
+        <button onclick="limparHistorico()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700">Limpar</button>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div id="historicoBox"><div class="empty">Nenhuma chave gerada ainda</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" style="display:none;position:fixed;bottom:20px;right:20px;background:#22d3a0;color:#000;padding:10px 18px;border-radius:9px;font-weight:700;font-size:13px;z-index:999">Copiado!</div>
+
+<script>
+// Backend Supabase (mesmo projeto que o app valida a licenca).
+// A chave publishable e publica por natureza.
+const SUPABASE_URL = 'https://wpkaaxarresldcstaatj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_G3I0XMI3dPG1Skkw9iFm9Q_1Ng6MVG0';
+const APP_ID = 'medcore_cloud';
+const APP_NOME = 'MedCore Cloud';
+const DOWNLOAD_URL = `${SUPABASE_URL}/functions/v1/ghz-app-downloads?app=medcore_cloud&download=1`;
+const HIST_KEY = 'ghz_historico_medcore_cloud';
+
+let ultima = null;
+
+function el(id){ return document.getElementById(id); }
+function setStatus(msg, ok){
+  const s = el('status');
+  s.textContent = msg;
+  s.className = 'status ' + (ok ? 'ok' : 'err');
+  s.style.display = 'block';
+}
+
+async function rpc(fn, payload){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error((data && (data.message || data.error)) || `Erro HTTP ${res.status}`);
+  if (data && data.ok === false) throw new Error(data.message || 'Operacao recusada.');
+  return data;
+}
+
+function fmtValidade(dias, expiresAt){
+  if (!dias || Number(dias) <= 0) return 'Sem vencimento';
+  if (expiresAt){
+    const d = new Date(expiresAt);
+    if (!isNaN(d)) return `${dias} dias (ate ${d.toLocaleDateString('pt-BR')})`;
+  }
+  return `${dias} dias`;
+}
+
+function montarTextos(chave, nome, devices, dias, expiresAt){
+  const primeiro = nome ? nome.split(' ')[0] : '';
+  const ola = primeiro ? `Ola, ${primeiro}!` : 'Ola!';
+  const validadeTxt = (!dias || Number(dias) <= 0) ? 'Licenca sem vencimento.' : `Validade: ${dias} dias${expiresAt ? ' (ate ' + new Date(expiresAt).toLocaleDateString('pt-BR') + ')' : ''}.`;
+
+  const msgML = `${ola} Segue sua licenca do ${APP_NOME}:\n\nChave: ${chave}\nDispositivos: ${devices}\n\nDownload: ${DOWNLOAD_URL}\n\nInstale, abra o app e ative com a chave acima. Depois conecte sua conta Supabase (seus dados ficam com voce). Qualquer duvida, e so chamar!`;
+
+  const msgWPP = `${ola} Obrigado pela compra do *${APP_NOME}*!\n\nSua chave de ativacao:\n${chave}\n\nDispositivos liberados: ${devices}\n${validadeTxt}\n\nComo ativar:\n1. Baixe o instalador: ${DOWNLOAD_URL}\n2. Instale e abra o ${APP_NOME}\n3. Cole a chave e clique em Ativar Licenca\n4. Clique em "Conectar minha conta Supabase" (seus dados clinicos ficam na SUA conta)\n\nPronto! Qualquer duvida estou a disposicao.\n- GHZ Plugin`;
+
+  return { msgML, msgWPP };
+}
+
+async function gerarLicenca(){
+  const btn = el('btnGerar');
+  const nome = el('nomeCliente').value.trim();
+  const email = el('emailCliente').value.trim();
+  const whats = el('whatsCliente').value.trim();
+  const pedido = el('pedidoML').value.trim();
+  const devices = Math.max(parseInt(el('maxDevices').value, 10) || 1, 1);
+  const dias = Math.max(parseInt(el('validDays').value, 10) || 0, 0);
+  const notas = el('notas').value.trim();
+
+  btn.disabled = true; btn.textContent = 'Gerando...';
+  el('status').style.display = 'none';
+
+  try {
+    const data = await rpc('ghz_generate_license', {
+      p_app_id: APP_ID,
+      p_customer_name: nome || null,
+      p_customer_email: email || null,
+      p_customer_phone: whats || null,
+      p_max_devices: devices,
+      p_valid_days: dias,
+      p_mercado_livre_order: pedido || null,
+      p_notes: notas || null
+    });
+
+    const chave = data.license_key;
+    const expiresAt = data.expires_at || null;
+    ultima = { chave, nome, devices, dias, expiresAt };
+
+    el('chaveGerada').textContent = chave;
+    el('chaveLabel').textContent = `${APP_NOME}${nome ? ' - ' + nome : ''}`;
+    el('metaRow').innerHTML =
+      `<span class="meta-pill">Dispositivos: <b>${devices}</b></span>` +
+      `<span class="meta-pill">Validade: <b>${fmtValidade(dias, expiresAt)}</b></span>`;
+
+    const { msgML, msgWPP } = montarTextos(chave, nome, devices, dias, expiresAt);
+    el('msgML').textContent = msgML;
+    el('msgWPP').textContent = msgWPP;
+    const charCount = msgML.replace(/\n/g, ' ').length;
+    el('mlTitulo').textContent = `Mensagem ML (${charCount}/350)`;
+    el('mlTitulo').style.color = charCount > 350 ? 'var(--red)' : '';
+
+    el('resultCard').style.display = 'block';
+    setStatus('Licenca criada no Supabase com sucesso.', true);
+  } catch (e) {
+    setStatus('Erro ao gerar licenca: ' + (e.message || e), false);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Gerar Licenca MedCore Cloud';
+  }
+}
+
+function trocarTab(tab, btn){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+  btn.classList.add('ativo');
+  el('tabMl').style.display = tab === 'ml' ? 'block' : 'none';
+  el('tabWpp').style.display = tab === 'wpp' ? 'block' : 'none';
+}
+
+function copiarTexto(texto, msg){
+  navigator.clipboard.writeText(texto).then(() => {
+    const t = el('toast');
+    t.textContent = msg || 'Copiado!';
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 1800);
+  });
+}
+
+function salvarHistorico(){
+  if (!ultima) return;
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+  hist.unshift({
+    id: Date.now(),
+    chave: ultima.chave,
+    cliente: ultima.nome,
+    devices: ultima.devices,
+    dias: ultima.dias,
+    data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  });
+  if (hist.length > 200) hist.pop();
+  localStorage.setItem(HIST_KEY, JSON.stringify(hist));
+  renderHistorico();
+  copiarTexto(ultima.chave, 'Salvo no historico!');
+}
+
+function renderHistorico(){
+  const hist = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+  const box = el('historicoBox');
+  if (!hist.length){ box.innerHTML = '<div class="empty">Nenhuma chave gerada ainda</div>'; return; }
+  box.innerHTML = hist.slice(0, 50).map(h => `
+    <div class="historico-item">
+      <div class="info">
+        <div class="app-nome">${h.cliente ? h.cliente : 'Sem nome'} · ${h.devices || 1} disp.${h.dias ? ' · ' + h.dias + 'd' : ''}</div>
+        <div class="chave-mini">${h.chave}</div>
+        <div class="data">${h.data}</div>
+      </div>
+      <div class="acoes">
+        <button class="btn-copy" onclick="copiarTexto('${h.chave}','Chave copiada!')">Copiar</button>
+      </div>
+    </div>`).join('');
+}
+
+function limparHistorico(){
+  if (!confirm('Limpar todo o historico do MedCore Cloud?')) return;
+  localStorage.removeItem(HIST_KEY);
+  renderHistorico();
+}
+
+renderHistorico();
+</script>
+</body>
+</html>
