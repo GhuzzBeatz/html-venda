@@ -297,7 +297,7 @@ async function gerarTudo() {
   const cliente = document.getElementById('nomeCliente').value.trim();
   const pedidoML = document.getElementById('pedidoML').value.trim();
   const saudacao = cliente ? `Ola, ${cliente.split(' ')[0]}! ` : 'Ola! ';
-  const link = downloadUrl(appAtivo);
+  const link = downloadPageUrl(appAtivo);
   let chave;
 
   btn.disabled = true; btn.textContent = 'Gerando...';
